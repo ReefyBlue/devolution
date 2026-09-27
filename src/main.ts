@@ -1,13 +1,16 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { loadProfiles, ProfileError } from './config/profiles';
+import { FixedStepClock } from './core/fixedStep';
+import { Crane } from './crane/crane';
+import { CraneInput } from './input/craneInput';
 import { ContainerMeshes } from './render/containerMeshes';
 import { CraneRig } from './render/craneRig';
 import { buildEnvironment, followWithShadows } from './render/environment';
 import { Stage } from './render/stage';
 import { buildVessel } from './render/vesselMesh';
 import { buildTractorAndChassis } from './render/yardMesh';
-import type { CraneView } from './sim/craneView';
+import { lerpView } from './sim/craneView';
 import { World } from './sim/world';
 
 const host = document.getElementById('app');
@@ -29,20 +32,19 @@ function start(el: HTMLElement): void {
   stage.scene.add(buildVessel(world), buildTractorAndChassis(world.chassis), crane.root, boxes.group);
   boxes.sync(world.containers);
 
-  const gantryX = world.frame.worldX(scene.crane.startQuayMark_m);
-  const trolleyZ = world.frame.worldZ(scene.crane.startTrolley_m);
-  const view: CraneView = {
-    gantryX,
-    trolleyZ,
-    boomAngle: 0,
-    load: { x: gantryX, y: scene.crane.startHoistHeight_m, z: trolleyZ },
-    castingLength: profiles.containers.castingSpacingLength_m.ft40,
-    flippersDown: 0,
-    cornerLanded: { WL: false, WR: false, LL: false, LR: false },
-    locked: false,
+  const sim = new Crane(profiles, scene, world.frame);
+  const input = new CraneInput(profiles.controls, window);
+  const clock = new FixedStepClock();
+  let previous = sim.view();
+  let current = previous;
+  const step = (): void => {
+    input.gamepad.poll();
+    sim.step(clock.dt, input.commands());
+    previous = current;
+    current = sim.view();
   };
-  crane.update(view);
-  followWithShadows(env, gantryX, 0);
+
+  const gantryX = current.gantryX;
 
   const camera = new THREE.PerspectiveCamera(55, stage.aspect, 0.3, 4000);
   const orbit = new OrbitControls(camera, stage.renderer.domElement);
@@ -63,14 +65,39 @@ function start(el: HTMLElement): void {
   };
   setView('overview');
 
-  const frame = (): void => {
+  let last = performance.now();
+  const frame = (now: number): void => {
+    const steps = clock.advance((now - last) / 1000);
+    last = now;
+    input.gamepad.poll();
+    for (let i = 0; i < steps; i++) step();
+    const view = lerpView(previous, current, clock.alpha);
+    crane.update(view);
+    followWithShadows(env, view.gantryX, 0);
     stage.fit(camera);
     orbit.update();
     stage.renderer.render(stage.scene, camera);
   };
   stage.renderer.setAnimationLoop(frame);
 
-  Object.assign(window, { __quayops: { setView, views: Object.keys(views) } });
+  // Test hooks for the headless smoke run: fast-forward the simulation with the live input, read the drives.
+  const advance = (seconds: number): void => {
+    for (let i = 0; i < Math.round(seconds / clock.dt); i++) step();
+  };
+  const drive = (a: { axis: { position: number; velocity: number; atLimit: boolean; travel: { min: number; max: number } } }) => ({
+    position: a.axis.position,
+    velocity: a.axis.velocity,
+    atLimit: a.axis.atLimit,
+    min: a.axis.travel.min,
+    max: a.axis.travel.max,
+  });
+  const state = () => ({
+    gantry: drive(sim.gantry),
+    trolley: drive(sim.trolley),
+    hoist: drive(sim.hoist),
+    boom: { ...drive(sim.boom), latched: sim.boom.latched, interlock: sim.boom.interlock },
+  });
+  Object.assign(window, { __quayops: { setView, views: Object.keys(views), advance, state } });
   document.body.dataset.ready = 'true';
 }
 

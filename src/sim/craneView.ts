@@ -20,3 +20,17 @@ export interface CraneView {
   cornerLanded: Record<Corner, boolean>;
   locked: boolean;
 }
+
+/** Blends two simulated states for rendering between fixed steps; discrete fields come from the newer one. */
+export function lerpView(a: CraneView, b: CraneView, t: number): CraneView {
+  const mix = (p: number, q: number): number => p + (q - p) * t;
+  return {
+    ...b,
+    gantryX: mix(a.gantryX, b.gantryX),
+    trolleyZ: mix(a.trolleyZ, b.trolleyZ),
+    boomAngle: mix(a.boomAngle, b.boomAngle),
+    load: { x: mix(a.load.x, b.load.x), y: mix(a.load.y, b.load.y), z: mix(a.load.z, b.load.z) },
+    castingLength: mix(a.castingLength, b.castingLength),
+    flippersDown: mix(a.flippersDown, b.flippersDown),
+  };
+}

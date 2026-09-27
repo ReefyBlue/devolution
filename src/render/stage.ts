@@ -10,7 +10,7 @@ export class Stage {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     host.appendChild(this.renderer.domElement);
@@ -20,7 +20,7 @@ export class Stage {
     return this.host.clientWidth / Math.max(1, this.host.clientHeight);
   }
 
-  /** Matches the canvas to the host size; returns true when it changed. */
+  /** Matches the canvas and the camera aspect to the host size. */
   fit(camera: THREE.PerspectiveCamera): void {
     const w = this.host.clientWidth;
     const h = this.host.clientHeight;
