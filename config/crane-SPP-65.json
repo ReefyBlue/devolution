@@ -1,0 +1,17 @@
+{
+  "profileId": "SPP-65",
+  "railGauge_m": 30.48,
+  "outreach_m": 65.0,
+  "backreach_m": 20.0,
+  "liftHeight_m": 48.0,
+  "liftBelowRail_m": 20.0,
+  "portalClearance_m": 15.0,
+  "clearWidthBetweenLegs_m": 18.3,
+  "bufferToBuffer_m": 27.0,
+  "sheaveHeight_m": 53.5,
+  "boomHingeFromWatersideRail_m": 4.0,
+  "boomParkTrolley_m": -6.0,
+  "ratedLoad_t": 65,
+  "inServiceWindLimit_kn": 40,
+  "clearanceOverStack_m": 1.0
+}

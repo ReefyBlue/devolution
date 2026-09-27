@@ -1,0 +1,14 @@
+{
+  "length_m": { "ft20": 6.058, "ft40": 12.192, "ft45": 13.716 },
+  "width_m": 2.438,
+  "height_m": { "standard": 2.591, "HC": 2.896 },
+  "castingSpacingLength_m": { "ft20": 5.853, "ft40": 11.985, "ft45": 13.509 },
+  "castingSpacingWidth_m": 2.259,
+  "stackingConeGap_m": 0.03,
+  "maxGross_t": 30.48,
+  "tare_t": {
+    "20DV": 2.3, "40DV": 3.75, "40HC": 3.9, "45HC": 4.8,
+    "20RF": 3.0, "40RF": 4.5, "20TK": 3.6,
+    "20OT": 2.3, "40OT": 3.9, "20FR": 2.7, "40FR": 4.8
+  }
+}

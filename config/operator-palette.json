@@ -1,0 +1,12 @@
+{
+  "operators": {
+    "MSK": { "colour": "#5aa9d6", "prefixes": ["MSKU", "MRKU"] },
+    "MSC": { "colour": "#c9a227", "prefixes": ["MSCU", "MEDU"] },
+    "CMA": { "colour": "#1f3f7a", "prefixes": ["CMAU"] },
+    "HLC": { "colour": "#e8741e", "prefixes": ["HLXU", "HLBU"] },
+    "ONE": { "colour": "#c2185b", "prefixes": ["ONEU"] },
+    "EMC": { "colour": "#2e7d32", "prefixes": ["EGHU", "EMCU"] },
+    "COS": { "colour": "#1565c0", "prefixes": ["CSNU", "CBHU"] }
+  },
+  "unknownColour": "#8a8f94"
+}

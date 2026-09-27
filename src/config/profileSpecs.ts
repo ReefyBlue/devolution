@@ -1,0 +1,171 @@
+// The tuning profiles in config/*.json. Defaults live in the JSON files, ranges here.
+
+import { bool, int, list, map, num, obj, oneOf, text } from './spec';
+
+/** KeyboardEvent.code values, e.g. "KeyW", "ArrowUp", "ShiftLeft". */
+const keys = list(text(/^[A-Za-z0-9]+$/), 1);
+/** Standard-mapping gamepad axis and button indices. */
+const axis = int(0, 7);
+const button = int(0, 19);
+
+const drive = obj({
+  maxSpeed_mps: num(0.05, 10, 'm/s'),
+  accel_mps2: num(0.05, 5, 'm/s²'),
+  decel_mps2: num(0.05, 5, 'm/s²'),
+  creepFraction: num(0.02, 0.5, '', 0.01),
+  endZone_m: num(0, 30, 'm', 0.1),
+  zoneCapFraction: num(0.05, 1, '', 0.01),
+});
+
+export const PROFILE_SPECS = {
+  crane: obj({
+    profileId: text(/^[A-Za-z0-9-]{1,32}$/),
+    railGauge_m: num(10, 50, 'm'),
+    outreach_m: num(20, 90, 'm', 0.1),
+    backreach_m: num(0, 40, 'm', 0.1),
+    liftHeight_m: num(20, 70, 'm', 0.1),
+    liftBelowRail_m: num(0, 40, 'm', 0.1),
+    portalClearance_m: num(5, 25, 'm', 0.1),
+    clearWidthBetweenLegs_m: num(10, 30, 'm', 0.1),
+    bufferToBuffer_m: num(15, 40, 'm', 0.1),
+    sheaveHeight_m: num(30, 80, 'm', 0.1),
+    boomHingeFromWatersideRail_m: num(-10, 15, 'm', 0.1),
+    boomParkTrolley_m: num(-40, 0, 'm', 0.1),
+    ratedLoad_t: num(20, 120, 't', 1),
+    inServiceWindLimit_kn: num(10, 80, 'kn', 1),
+    clearanceOverStack_m: num(0, 5, 'm', 0.1),
+  }),
+  gantry: drive,
+  trolley: drive,
+  hoist: obj({
+    ratedSpeed_mps: num(0.2, 5, 'm/s'),
+    emptySpeed_mps: num(0.2, 6, 'm/s'),
+    accel_mps2: num(0.05, 3, 'm/s²'),
+    decel_mps2: num(0.05, 3, 'm/s²'),
+    creepFraction: num(0.02, 0.5, '', 0.01),
+    upperZone_m: num(0, 20, 'm', 0.1),
+    zoneCapFraction: num(0.05, 1, '', 0.01),
+    slackRopeDecel_mps2: num(0.1, 5, 'm/s²'),
+  }),
+  boom: obj({
+    raisedAngle_deg: num(45, 88, '°', 1),
+    travelTime_s: num(10, 600, 's', 1),
+    softStartStop_s: num(0.5, 30, 's', 0.5),
+    latchTime_s: num(0, 60, 's', 1),
+  }),
+  spreader: obj({
+    spreaderMass_t: num(2, 30, 't', 0.1),
+    headblockMass_t: num(0.5, 15, 't', 0.1),
+    headblockHeight_m: num(0.2, 4, 'm'),
+    spreaderHeight_m: num(0.2, 3, 'm'),
+    telescopeSpeed_mps: num(0.05, 2, 'm/s'),
+    twistlockTurn_s: num(0.1, 5, 's', 0.1),
+    flipperTime_s: num(0.2, 10, 's', 0.1),
+    landingPinTravel_m: num(0.02, 0.5, 'm'),
+    pinRayOffset_m: num(0.05, 1, 'm'),
+    castingCapture_m: num(0.005, 0.3, 'm', 0.005),
+    flipperCapture_m: num(0, 1, 'm'),
+    flipperCaptureHeight_m: num(0, 2, 'm'),
+  }),
+  sway: obj({
+    naturalDamping: num(0, 1, '1/s', 0.005),
+    substeps: int(1, 32),
+    minRopeFall_m: num(0.1, 5, 'm', 0.1),
+    maxAngle_deg: num(5, 45, '°', 1),
+    dragCoefficient: num(0.5, 2.5, '', 0.05),
+    spreaderAreaSide_m2: num(0, 30, 'm²', 0.5),
+    spreaderAreaEnd_m2: num(0, 15, 'm²', 0.5),
+    antiSwayType: oneOf('electronic', 'rope', 'both'),
+    electronicGain: num(0, 3, '1/s', 0.05),
+    ropeDamping: num(0, 3, '1/s', 0.05),
+  }),
+  containers: obj({
+    length_m: obj({ ft20: num(5, 7, 'm', 0.001), ft40: num(11, 13, 'm', 0.001), ft45: num(13, 14, 'm', 0.001) }),
+    width_m: num(2.3, 2.6, 'm', 0.001),
+    height_m: obj({ standard: num(2.4, 2.7, 'm', 0.001), HC: num(2.7, 3, 'm', 0.001) }),
+    castingSpacingLength_m: obj({ ft20: num(5, 7, 'm', 0.001), ft40: num(11, 13, 'm', 0.001), ft45: num(13, 14, 'm', 0.001) }),
+    castingSpacingWidth_m: num(2, 2.5, 'm', 0.001),
+    stackingConeGap_m: num(0, 0.1, 'm', 0.005),
+    maxGross_t: num(10, 40, 't', 0.01),
+    tare_t: map(/^(20|40|45)(DV|HC|RF|OT|TK|FR)$/, num(1, 8, 't', 0.05)),
+  }),
+  palette: obj({
+    operators: map(/^[A-Z0-9]{2,4}$/, obj({ colour: text(/^#[0-9a-fA-F]{6}$/), prefixes: list(text(/^[A-Z]{3}[UJZ]$/), 1) })),
+    unknownColour: text(/^#[0-9a-fA-F]{6}$/),
+  }),
+  camera: obj({
+    cabinFov_deg: num(30, 100, '°', 1),
+    yawLimit_deg: num(30, 180, '°', 1),
+    pitchUp_deg: num(0, 45, '°', 1),
+    pitchDown_deg: num(45, 90, '°', 1),
+    startPitch_deg: num(-90, 30, '°', 1),
+    mouseSensitivity_degPerPx: num(0.02, 1, '°/px', 0.01),
+    stickSpeed_degps: num(20, 360, '°/s', 5),
+    orbitMinDistance_m: num(1, 100, 'm', 1),
+    orbitMaxDistance_m: num(50, 1000, 'm', 10),
+  }),
+  hud: obj({
+    refresh_hz: num(1, 60, 'Hz', 1),
+    swayAmber_m: num(0.01, 2, 'm'),
+    swayRed_m: num(0.02, 5, 'm'),
+  }),
+  audio: obj({
+    enabled: bool(),
+    volume: num(0, 1, '', 0.05),
+    gantryBellInterval_s: num(0.3, 5, 's', 0.1),
+  }),
+  rules: obj({
+    hardLanding_mps: num(0.05, 3, 'm/s'),
+    placementTolerance_cm: num(0.5, 50, 'cm', 0.5),
+    yawTolerance_deg: num(0.1, 10, '°', 0.1),
+    maxSwayAtPlacement_cm: num(1, 100, 'cm', 1),
+    moveTimeTargets_s: obj({
+      discharge: num(10, 1000, 's', 1),
+      load: num(10, 1000, 's', 1),
+      restow: num(10, 1000, 's', 1),
+      hatchcover: num(10, 2000, 's', 1),
+    }),
+    wrongSlot: oneOf('fail', 'penalise'),
+    windStopLimit_kn: num(10, 80, 'kn', 1),
+  }),
+  controls: obj({
+    keyboard: obj({
+      trolleyWaterside: keys,
+      trolleyLandside: keys,
+      gantryPlusX: keys,
+      gantryMinusX: keys,
+      hoistUp: keys,
+      hoistDown: keys,
+      creep: keys,
+      lock: keys,
+      spreader20: keys,
+      spreader40: keys,
+      spreader45: keys,
+      flippers: keys,
+      antiSway: keys,
+      boom: keys,
+      camera: keys,
+      tuning: keys,
+    }),
+    gamepad: obj({
+      deadzone: num(0, 0.5, '', 0.01),
+      hoistForwardLowers: bool(),
+      axes: obj({ trolley: axis, hoist: axis, lookX: axis, lookY: axis }),
+      buttons: obj({
+        lock: button,
+        antiSway: button,
+        flippers: button,
+        creep: button,
+        boom: button,
+        look: button,
+        camera: button,
+        spreaderLonger: button,
+        spreaderShorter: button,
+        gantryMinusX: button,
+        gantryPlusX: button,
+      }),
+    }),
+  }),
+};
+
+export type ProfileName = keyof typeof PROFILE_SPECS;

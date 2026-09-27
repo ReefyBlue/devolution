@@ -1,0 +1,9 @@
+{
+  "hardLanding_mps": 0.5,
+  "placementTolerance_cm": 5.0,
+  "yawTolerance_deg": 1.0,
+  "maxSwayAtPlacement_cm": 10,
+  "moveTimeTargets_s": { "discharge": 90, "load": 100, "restow": 120, "hatchcover": 240 },
+  "wrongSlot": "fail",
+  "windStopLimit_kn": 40
+}

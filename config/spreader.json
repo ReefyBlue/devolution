@@ -1,0 +1,14 @@
+{
+  "spreaderMass_t": 11,
+  "headblockMass_t": 4,
+  "headblockHeight_m": 1.4,
+  "spreaderHeight_m": 1.2,
+  "telescopeSpeed_mps": 0.2,
+  "twistlockTurn_s": 0.6,
+  "flipperTime_s": 2,
+  "landingPinTravel_m": 0.15,
+  "pinRayOffset_m": 0.3,
+  "castingCapture_m": 0.05,
+  "flipperCapture_m": 0.25,
+  "flipperCaptureHeight_m": 0.5
+}

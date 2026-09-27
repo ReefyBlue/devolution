@@ -1,0 +1,72 @@
+{
+  "quay": {
+    "length_m": 300,
+    "marksIncreaseTo": "right",
+    "orientation_deg": 0,
+    "watersideRailToFenderLine_m": 4.5,
+    "apronAboveWaterline_m": 5.0,
+    "landsideDepth_m": 60
+  },
+  "vessel": {
+    "name": "MV QUAYOPS TRAINER",
+    "loa_m": 160,
+    "beam_m": 25.0,
+    "draught_m": 9.0,
+    "deckHeightAboveWaterline_m": 5.5,
+    "mooring": { "sideAlongside": "starboard", "bowAtQuayMark_m": 230, "offFender_m": 0 },
+    "structure": {
+      "tankTopAboveKeel_m": 1.5,
+      "hatchCoamingHeight_m": 1.8,
+      "rowPitch_m": 2.55,
+      "firstHoldTier": 2,
+      "firstDeckTier": 82,
+      "hatchCoverThickness_m": 0.9
+    },
+    "bays": {
+      "count": 9,
+      "firstBayCentreFromBow_m": 20.0,
+      "pitch_m": 13.4,
+      "rowsInHold": 8,
+      "rowsOnDeck": 8,
+      "tiersInHold": 5,
+      "tiersOnDeck": 4,
+      "twentyOnlyBays": [],
+      "gaps": [{ "afterBay": 30, "length_m": 18, "structure": "deckhouse", "heightAboveDeck_m": 20 }]
+    },
+    "panelsAcross": 3
+  },
+  "deckStack": {
+    "rows": [5, 3, 1, 2, 4, 6],
+    "firstTier": 82,
+    "seed": 7,
+    "weightByTier_t": [
+      { "min": 18, "max": 28 },
+      { "min": 12, "max": 24 },
+      { "min": 8, "max": 20 },
+      { "min": 3.9, "max": 16 }
+    ],
+    "operators": ["MSK", "MSC", "CMA", "HLC", "ONE", "EMC", "COS"],
+    "bays": [
+      { "bay": 10, "tiers": ["40DV", "40DV", "40DV", "40DV"] },
+      { "bay": 14, "tiers": ["40DV", "40HC", "40DV", "40HC"] },
+      { "bay": 18, "tiers": ["20DV", "20DV", "40DV", "40DV"] }
+    ]
+  },
+  "lane": { "id": "L1", "fromWatersideRail_m": -8.5, "direction": "increasing" },
+  "chassis": { "bedHeight_m": 1.45, "length_m": 12.5, "clearDelay_s": 5 },
+  "crane": { "startQuayMark_m": 169.8, "startTrolley_m": -15, "startHoistHeight_m": 30 },
+  "testMoves": [
+    { "from": "14-02-88", "to": "L1", "chassisPosition": "centre" },
+    { "from": "18-04-88", "to": "L1", "chassisPosition": "centre" },
+    { "from": "18-04-86", "to": "L1", "chassisPosition": "centre" },
+    { "from": "17-04-84", "to": "L1", "chassisPosition": "rear" }
+  ],
+  "wind": {
+    "speed_kn": 0,
+    "fromDirection_deg": 0,
+    "gustSpeed_kn": 0,
+    "gustIntervalMin_s": 20,
+    "gustIntervalMax_s": 60,
+    "seed": 11
+  }
+}

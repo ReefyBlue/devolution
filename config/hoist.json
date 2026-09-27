@@ -1,0 +1,10 @@
+{
+  "ratedSpeed_mps": 1.5,
+  "emptySpeed_mps": 3.0,
+  "accel_mps2": 0.75,
+  "decel_mps2": 0.75,
+  "creepFraction": 0.1,
+  "upperZone_m": 7.0,
+  "zoneCapFraction": 0.2,
+  "slackRopeDecel_mps2": 1.5
+}

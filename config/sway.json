@@ -1,0 +1,12 @@
+{
+  "naturalDamping": 0.02,
+  "substeps": 4,
+  "minRopeFall_m": 0.5,
+  "maxAngle_deg": 25,
+  "dragCoefficient": 1.2,
+  "spreaderAreaSide_m2": 6,
+  "spreaderAreaEnd_m2": 2,
+  "antiSwayType": "electronic",
+  "electronicGain": 0.6,
+  "ropeDamping": 0.25
+}

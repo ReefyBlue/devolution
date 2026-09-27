@@ -1,0 +1,11 @@
+{
+  "cabinFov_deg": 60,
+  "yawLimit_deg": 150,
+  "pitchUp_deg": 20,
+  "pitchDown_deg": 89,
+  "startPitch_deg": -55,
+  "mouseSensitivity_degPerPx": 0.15,
+  "stickSpeed_degps": 120,
+  "orbitMinDistance_m": 8,
+  "orbitMaxDistance_m": 300
+}

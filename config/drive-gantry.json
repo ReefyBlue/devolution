@@ -1,0 +1,8 @@
+{
+  "maxSpeed_mps": 0.75,
+  "accel_mps2": 0.3,
+  "decel_mps2": 0.3,
+  "creepFraction": 0.1,
+  "endZone_m": 3.0,
+  "zoneCapFraction": 0.2
+}

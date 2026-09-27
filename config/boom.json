@@ -1,0 +1,6 @@
+{
+  "raisedAngle_deg": 80,
+  "travelTime_s": 150,
+  "softStartStop_s": 5,
+  "latchTime_s": 10
+}
