@@ -8,9 +8,18 @@ import { driveParams, STOPPED_MPS } from './drive';
 export class Gantry {
   readonly axis: RampedAxis;
 
-  constructor(profiles: Profiles, railLength_m: number, startX: number) {
+  constructor(
+    private readonly profiles: Profiles,
+    railLength_m: number,
+    startX: number,
+  ) {
     const half = profiles.crane.bufferToBuffer_m / 2;
     this.axis = new RampedAxis(driveParams(profiles.gantry), { min: half, max: railLength_m - half }, startX);
+  }
+
+  /** Picks up changed drive values (tuning panel). */
+  retune(): void {
+    this.axis.params = driveParams(this.profiles.gantry);
   }
 
   /** demand +1 = world +X (right when facing the water). */

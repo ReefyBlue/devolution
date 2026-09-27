@@ -74,12 +74,11 @@ export class Crane {
   ) {
     const scene = world.scene;
     const start = scene.crane;
-    const s = profiles.sway;
     this.gantry = new Gantry(profiles, scene.quay.length_m, world.frame.worldX(start.startQuayMark_m));
     this.trolley = new Trolley(profiles, start.startTrolley_m);
     this.hoist = new Hoist(profiles, start.startHoistHeight_m);
     this.boom = new Boom(profiles);
-    this.sway = new SwayModel({ substeps: s.substeps, minLength: s.minRopeFall_m, maxAngle: degToRad(s.maxAngle_deg) });
+    this.sway = new SwayModel(this.swayLimits());
     this.wind = new WindField(scene.wind, world.frame);
     this.spreader = new Spreader(profiles);
     this.load = new LoadSuspension({ x: this.gantry.x, fwr: this.trolley.fwr, y: this.hoist.height });
@@ -151,6 +150,20 @@ export class Crane {
     sp.flippers.step(dt);
     this.moveCarriedBox();
     this.clearChassis();
+  }
+
+  /** Picks up values changed in the tuning panel; everything else reads the profiles every step. */
+  retune(): void {
+    this.gantry.retune();
+    this.trolley.retune();
+    this.hoist.retune();
+    this.boom.retune();
+    this.sway.limits = this.swayLimits();
+  }
+
+  private swayLimits() {
+    const s = this.profiles.sway;
+    return { substeps: s.substeps, minLength: s.minRopeFall_m, maxAngle: degToRad(s.maxAngle_deg) };
   }
 
   /** Rope fall from the trolley sheave axis to the headblock sheave axis, m. */

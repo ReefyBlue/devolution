@@ -36,6 +36,7 @@ export interface State {
   spreader: { size: number | null; lock: string; flippers: number; landed: Record<string, boolean>; carried: string | null };
   boxes: Box[];
   events: { kind: string; [k: string]: unknown }[];
+  camera: 'cabin' | 'orbit';
 }
 export type Sample = { trolley: number; gantry: number };
 

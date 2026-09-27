@@ -9,10 +9,18 @@ export class Trolley {
   readonly axis: RampedAxis;
   private readonly parkLimit: number;
 
-  constructor(profiles: Profiles, startFwr: number) {
+  constructor(
+    private readonly profiles: Profiles,
+    startFwr: number,
+  ) {
     const c = profiles.crane;
     this.parkLimit = c.boomParkTrolley_m;
     this.axis = new RampedAxis(driveParams(profiles.trolley), { min: -(c.railGauge_m + c.backreach_m), max: c.outreach_m }, startFwr);
+  }
+
+  /** Picks up changed drive values (tuning panel). */
+  retune(): void {
+    this.axis.params = driveParams(this.profiles.trolley);
   }
 
   /** demand +1 = towards the water. */

@@ -46,8 +46,9 @@ export class RampedAxis {
   /** True when the last step ended on an end stop (limit switch). */
   atLimit = false;
 
+  /** `params` may be replaced while running (live tuning); the state carries on. */
   constructor(
-    readonly params: DriveParams,
+    public params: DriveParams,
     readonly travel: AxisTravel,
     public position: number,
   ) {}

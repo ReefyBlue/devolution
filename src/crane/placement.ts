@@ -4,6 +4,7 @@
 import { formatSlot, parseSlot } from '../core/slotAddress';
 import type { BoxLocation, Container } from '../sim/container';
 import type { Surface, World } from '../sim/world';
+import { deckRowZ, nearestBay, nearestDeckRow } from '../vessel/abeam';
 
 export interface Placement {
   location: BoxLocation;
@@ -30,21 +31,10 @@ export function registerPlacement(box: Container, support: Surface, world: World
   if (!onVessel) return { location: { kind: 'quay' }, label: 'quay', dx_cm: 0, dz_cm: 0, yaw_deg };
 
   const g = world.geometry;
-  const v = world.scene.vessel;
-  const bays = g.positions.flatMap((p) => (box.size === 20 ? (p.lone20 ? [p.bay] : [p.bay - 1, p.bay + 1]) : p.lone20 ? [] : [p.bay]));
-  const bay = nearest(bays, (b) => g.bayWorldX(b), box.x);
-  const rowCount = v.bays.rowsOnDeck;
-  const rows = Array.from({ length: rowCount }, (_, i) => (rowCount % 2 === 0 ? i + 1 : i));
-  const rowZ = (r: number): number => world.frame.worldZ(g.rowFromWatersideRail(r, rowCount));
-  const row = nearest(rows, rowZ, box.z);
+  const bay = nearestBay(g, box.x, box.size);
+  const row = nearestDeckRow(g, box.z);
   const belowTier = below?.location.kind === 'vessel' ? parseSlot(below.location.slot)?.tier : undefined;
-  const tier = belowTier !== undefined ? belowTier + 2 : v.structure.firstDeckTier;
+  const tier = belowTier !== undefined ? belowTier + 2 : g.vessel.structure.firstDeckTier;
   const slot = formatSlot({ bay, row, tier });
-  return { location: { kind: 'vessel', slot }, label: slot, ...offset(g.bayWorldX(bay), rowZ(row)) };
-}
-
-function nearest(items: readonly number[], at: (item: number) => number, value: number): number {
-  let best = items[0] ?? 0;
-  for (const item of items) if (Math.abs(at(item) - value) < Math.abs(at(best) - value)) best = item;
-  return best;
+  return { location: { kind: 'vessel', slot }, label: slot, ...offset(g.bayWorldX(bay), deckRowZ(g, row)) };
 }

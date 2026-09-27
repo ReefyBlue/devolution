@@ -2,7 +2,7 @@
 // upper pre-limit zone, hard upper and lower limits.
 
 import type { Profiles } from '../config/profiles';
-import { type AxisCommand, RampedAxis } from '../core/rampedAxis';
+import { type AxisCommand, type DriveParams, RampedAxis } from '../core/rampedAxis';
 import { maxHoistSpeed, type HoistSpeedParams } from './hoistSpeed';
 
 /** Within this distance of the upper limit the spreader counts as fully up (boom interlock), m. */
@@ -10,7 +10,6 @@ const AT_TOP_M = 0.01;
 
 export class Hoist {
   readonly axis: RampedAxis;
-  private readonly speed: HoistSpeedParams;
   /** Mass under the spreader (a locked box), t. */
   load_t = 0;
 
@@ -18,15 +17,18 @@ export class Hoist {
     private readonly profiles: Profiles,
     startHeight: number,
   ) {
-    const h = profiles.hoist;
     const c = profiles.crane;
-    this.speed = {
-      ratedSpeed: h.ratedSpeed_mps,
-      emptySpeed: h.emptySpeed_mps,
-      ratedLoad_t: c.ratedLoad_t,
-      suspendedTare_t: profiles.spreader.spreaderMass_t + profiles.spreader.headblockMass_t,
-    };
-    const params = {
+    this.axis = new RampedAxis(this.params(), { min: -c.liftBelowRail_m, max: c.liftHeight_m }, startHeight);
+  }
+
+  /** Picks up changed hoist values (tuning panel). */
+  retune(): void {
+    this.axis.params = this.params();
+  }
+
+  private params(): DriveParams {
+    const h = this.profiles.hoist;
+    return {
       maxSpeed: h.emptySpeed_mps,
       accel: h.accel_mps2,
       decel: h.decel_mps2,
@@ -35,7 +37,6 @@ export class Hoist {
       zoneAtMin: 0,
       zoneCapFraction: h.zoneCapFraction,
     };
-    this.axis = new RampedAxis(params, { min: -c.liftBelowRail_m, max: c.liftHeight_m }, startHeight);
   }
 
   /**
@@ -52,7 +53,14 @@ export class Hoist {
 
   /** Speed limit for the current load, m/s. */
   get maxSpeed(): number {
-    return maxHoistSpeed(this.speed, this.load_t);
+    const { hoist: h, crane: c, spreader: sp } = this.profiles;
+    const speed: HoistSpeedParams = {
+      ratedSpeed: h.ratedSpeed_mps,
+      emptySpeed: h.emptySpeed_mps,
+      ratedLoad_t: c.ratedLoad_t,
+      suspendedTare_t: sp.spreaderMass_t + sp.headblockMass_t,
+    };
+    return maxHoistSpeed(speed, this.load_t);
   }
 
   get height(): number {

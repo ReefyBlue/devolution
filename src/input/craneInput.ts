@@ -78,6 +78,13 @@ export class CraneInput {
     return request;
   }
 
+  /** Right stick while the look button is held (−1 … +1 each; y up = −1), else zero. */
+  gamepadLook(): { x: number; y: number } {
+    const g = this.bindings.gamepad;
+    if (!this.gamepad.isHeld(g.buttons.look)) return { x: 0, y: 0 };
+    return { x: this.gamepad.axis(g.axes.lookX), y: this.gamepad.axis(g.axes.lookY) };
+  }
+
   /** Presses of an action since it was last taken (keyboard and gamepad together). */
   take(action: PressAction): number {
     const k = this.bindings.keyboard;

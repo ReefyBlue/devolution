@@ -2,7 +2,7 @@
 
 import type { Profiles } from '../config/profiles';
 import { degToRad } from '../core/units';
-import { RampedAxis } from '../core/rampedAxis';
+import { type DriveParams, RampedAxis } from '../core/rampedAxis';
 
 /** Conditions the boom needs before it may move. */
 export interface BoomPermits {
@@ -20,16 +20,22 @@ export class Boom {
   latch = 0;
   /** Why the last boom command was refused ('' when it was not). */
   interlock: BoomInterlock = '';
-  private readonly latchRate: number;
 
-  constructor(profiles: Profiles) {
-    const b = profiles.boom;
-    // Trapezoidal run: full travel in travelTime_s with a soft start and stop of softStartStop_s each.
-    const speed = b.raisedAngle_deg / (b.travelTime_s - b.softStartStop_s);
+  constructor(private readonly profiles: Profiles) {
+    this.axis = new RampedAxis(this.params(), { min: 0, max: profiles.boom.raisedAngle_deg }, 0);
+  }
+
+  /** Picks up changed boom timings (tuning panel); the raised angle is structural and stays. */
+  retune(): void {
+    this.axis.params = this.params();
+  }
+
+  /** Trapezoidal run: full travel in travelTime_s with a soft start and stop of softStartStop_s each. */
+  private params(): DriveParams {
+    const b = this.profiles.boom;
+    const speed = b.raisedAngle_deg / Math.max(1, b.travelTime_s - b.softStartStop_s);
     const ramp = speed / b.softStartStop_s;
-    const params = { maxSpeed: speed, accel: ramp, decel: ramp, creepFraction: 1, zoneAtMax: 0, zoneAtMin: 0, zoneCapFraction: 1 };
-    this.axis = new RampedAxis(params, { min: 0, max: b.raisedAngle_deg }, 0);
-    this.latchRate = b.latchTime_s > 0 ? 1 / b.latchTime_s : Infinity;
+    return { maxSpeed: speed, accel: ramp, decel: ramp, creepFraction: 1, zoneAtMax: 0, zoneAtMin: 0, zoneCapFraction: 1 };
   }
 
   /** demand +1 = raise, −1 = lower. */
@@ -43,8 +49,9 @@ export class Boom {
 
     // At the raised angle the latch engages by itself; lowering first releases it, then the boom moves.
     const atRaised = this.axis.atLimit && this.axis.position >= this.axis.travel.max;
-    if (atRaised && d < 0) this.latch = Math.max(0, this.latch - this.latchRate * dt);
-    else if (atRaised) this.latch = Math.min(1, this.latch + this.latchRate * dt);
+    const latchRate = this.profiles.boom.latchTime_s > 0 ? 1 / this.profiles.boom.latchTime_s : Infinity;
+    if (atRaised && d < 0) this.latch = Math.max(0, this.latch - latchRate * dt);
+    else if (atRaised) this.latch = Math.min(1, this.latch + latchRate * dt);
     if (this.latch > 0) d = 0;
 
     this.axis.step(dt, { demand: d, creep: false });

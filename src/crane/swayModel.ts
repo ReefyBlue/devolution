@@ -36,7 +36,8 @@ export class SwayModel {
   readonly trolley: SwayAxis = { angle: 0, rate: 0 };
   readonly gantry: SwayAxis = { angle: 0, rate: 0 };
 
-  constructor(readonly limits: SwayLimits) {}
+  /** `limits` may be replaced while running (live tuning). */
+  constructor(public limits: SwayLimits) {}
 
   step(dt: number, input: SwayInput): void {
     const n = Math.max(1, Math.round(this.limits.substeps));

@@ -1,0 +1,146 @@
+/* Head-up display over the 3D view: status bar at the bottom, move and messages top left, wind top right. */
+
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font: 13px/1.35 var(--mono);
+  color: var(--text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.hud-top-left,
+.hud-top-right {
+  position: absolute;
+  top: 10px;
+  padding: 8px 12px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+}
+.hud-top-left {
+  left: 10px;
+  max-width: min(640px, calc(100vw - 300px));
+}
+.hud-top-right {
+  right: 10px;
+  text-align: right;
+}
+
+.hud-title {
+  color: var(--accent);
+  font-weight: 600;
+}
+.hud-hint,
+.hud-muted {
+  color: var(--muted);
+}
+
+.hud-messages {
+  margin-top: 6px;
+}
+.hud-message {
+  font-weight: 600;
+}
+.hud-message.alarm {
+  color: var(--alarm);
+  animation: hud-flash 0.5s steps(2, jump-none) infinite;
+}
+.hud-message.warn {
+  color: var(--warn);
+}
+.hud-message.ok {
+  color: var(--ok);
+}
+@keyframes hud-flash {
+  to {
+    opacity: 0.35;
+  }
+}
+
+.hud-bar {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+}
+.hud-cell {
+  padding: 8px 12px;
+  border-left: 1px solid var(--panel-edge);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hud-cell:first-child {
+  border-left: 0;
+}
+.hud-cell b {
+  color: var(--accent);
+  font-weight: 600;
+}
+.hud-on {
+  color: var(--ok);
+}
+.hud-warn {
+  color: var(--warn);
+}
+.hud-alarm {
+  color: var(--alarm);
+}
+
+.hud-corners {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  gap: 2px 18px;
+}
+.hud-lamp::before {
+  content: '●';
+  margin-right: 4px;
+  color: var(--alarm);
+}
+.hud-lamp.landed::before {
+  color: var(--ok);
+}
+
+.hud-sway {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+.hud-sway i {
+  width: 7px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.15);
+}
+.hud-sway i.on {
+  background: var(--ok);
+}
+.hud-sway.amber i.on {
+  background: var(--warn);
+}
+.hud-sway.red i.on {
+  background: var(--alarm);
+}
+
+@media (max-width: 900px) {
+  .hud {
+    font-size: 11px;
+  }
+  .hud-bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .hud-top-left {
+    max-width: calc(100vw - 20px);
+  }
+  .hud-top-right {
+    top: auto;
+    bottom: 150px;
+  }
+}

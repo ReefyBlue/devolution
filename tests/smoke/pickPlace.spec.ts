@@ -149,6 +149,8 @@ test('smoke run: pick 14-02-88 from the deck stack and land it on the chassis in
   s = await state(page);
   expect(s.boxes.some((b) => b.id === box.id)).toBe(false);
   step('the tractor took the box away');
+  await expect(page.locator('.hud [data-f="move"]')).toHaveText('MOVE  18-04-88 ─► L1 centre');
+  step('HUD shows the next test move');
   expect(errors).toEqual([]);
   console.info('SMOKE RUN: PASS');
 });
