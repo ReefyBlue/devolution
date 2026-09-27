@@ -1,76 +1,53 @@
 # QuayOps: STS quay crane operator simulator
 
-A ship-to-shore (STS) quay crane simulator for Unity 6 (URP, Input System, C#). You drive the crane from the cabin: rope-hung spreader with real pendulum sway, precise landing, twistlocks, flippers, trucks under the crane. The core feature is the **scenario system**: vessel, bay plan, work queue, yard side and environment are defined in JSON files, and the simulator loads and plays them. There is no campaign and no economy.
+A ship-to-shore (STS) quay crane simulator that runs in the browser (TypeScript + Three.js, no game engine). You drive the crane from the cabin: rope-hung spreader with real pendulum sway, precise landing, twistlocks, flippers, trucks under the crane. The core feature is the **scenario system**: vessel, bay plan, work queue, yard side and environment are defined in JSON files, and the simulator loads and plays them. There is no campaign and no economy.
 
 ## Status
 
 | Step / phase | State |
 |---|---|
-| Step 0: Editor/MCP check | **Pending.** The first session ran in a cloud container with no Unity Editor and no Unity MCP. Next: re-run it via MCP on the Editor machine (see `docs/STEP1_PROPOSAL.md` §0) |
-| Step 1: proposal | **Approved 2026-09-27:** all defaults accepted, option A (local Claude Code + Unity Editor + MCP bridge). See `docs/STEP1_PROPOSAL.md` |
-| Platform change | **Proposed 2026-09-27, waiting for OK:** browser build without a game engine (TypeScript + Three.js). See `docs/STEP1_WEB_ADDENDUM.md` |
-| Phase 1: crane core | Not started |
-| Phase 2: scenario system | Not started. Draft format: `docs/SCENARIO_FORMAT.md`; loader checks: `docs/VALIDATION_RULES.md` |
+| Step 1: proposal | **Approved 2026-09-27**, all defaults. See `docs/STEP1_PROPOSAL.md` |
+| Platform | **Browser build approved 2026-09-27** (replaces Unity). See `docs/STEP1_WEB_ADDENDUM.md` |
+| Phase 1: crane core | In progress |
+| Phase 2: scenario system | Not started. Format: `docs/SCENARIO_FORMAT.md`; loader checks: `docs/VALIDATION_RULES.md` |
 | Phase 3: operations loop and scoring | Not started |
 | Phase 4: polish | Not started |
 
 ## Repository layout
 
-The repository root **is** the Unity project root (`Assets/`, `Packages/`, `ProjectSettings/` at the top level).
-
 | Path | Content |
 |---|---|
-| `CLAUDE.md` | Instructions Claude Code loads at start: status, working rules, where the documents are |
+| `CLAUDE.md` | Instructions Claude Code loads at start: status, working rules, commands |
 | `docs/BRIEF.md` | The original project brief, verbatim (all four phases) |
-| `docs/STEP1_PROPOSAL.md` | Step 0 report, folder structure, ScriptableObjects, Phase 1 architecture, answered questions |
-| `docs/SCENARIO_FORMAT.md` | Scenario file reference for hand-authoring (draft, finalised in Phase 2) |
-| `docs/VALIDATION_RULES.md` | Loader specification for Phase 2: every scenario check (groups A–I), its severity and an example message |
-| `Assets/QuayOps/Scenarios/Schema/quayops-scenario.v1.schema.json` | JSON Schema: autocomplete and hover help in VS Code/Rider |
-| `Assets/QuayOps/Scenarios/deepsea-bay22-mixed.json` | Complete example scenario (deep-sea vessel, bay 22, mixed discharge/load with a hatch cover move, 20 kn) |
+| `docs/STEP1_PROPOSAL.md` · `docs/STEP1_WEB_ADDENDUM.md` | The approved design; the addendum replaces the Unity-specific parts |
+| `docs/SCENARIO_FORMAT.md` | Scenario file reference for hand-authoring |
+| `docs/VALIDATION_RULES.md` | Loader specification for Phase 2: every scenario check, its severity and an example message |
+| `scenarios/` | Scenario files; `scenarios/Schema/` holds the JSON Schema (autocomplete in VS Code) |
+| `config/` | Tuning profiles (crane, drives, spreader, sway, containers, controls …) |
+| `src/` | The simulator |
+| `tests/` | Unit tests and the headless smoke run |
 
-## Setup
+## Running it
 
-Prerequisites (Windows 11 or a recent macOS, about 15 GB free disk):
+- **No install:** open the QuayOps link (published at the end of each phase) in current Chrome or Edge, or double-click the offline file `quayops.html`.
+- **Development** (Node.js 22.12+): `npm install`, then `npm run dev`. `npm run check` runs type check, lint and unit tests; `npm run smoke` runs the headless smoke test (first run `npx playwright install chromium`); `npm run build` writes the offline file to `dist/`.
 
-| Program | Why | Get it |
-|---|---|---|
-| Git | Checks out this branch, commits the project | git-scm.com (Windows: Git for Windows, which also gives Claude Code its Bash shell) |
-| Unity Hub + **Unity 6 LTS** (6000.x) | The Editor; free Unity Personal licence with a Unity account | unity.com/download; install the Editor from the Hub (the Visual Studio Community module is optional) |
-| uv (+ Python 3.10+) | Runs the MCP for Unity server; the bridge's setup wizard checks both | docs.astral.sh/uv; Python from python.org only if the wizard reports it missing |
-| Claude Code | Drives the Editor through MCP; needs a paid Claude plan (Pro, Max, Team or Enterprise) | Windows PowerShell: `irm https://claude.ai/install.ps1 \| iex`; macOS: `curl -fsSL https://claude.ai/install.sh \| bash` (the Claude desktop app works too) |
-| VS Code (optional) | Hand-writing scenarios with schema autocomplete | code.visualstudio.com |
-
-The MCP for Unity bridge is not a separate download: it is added to the Unity project in step 6.
-
-1. Unity Hub ▸ **New project** ▸ Unity 6 LTS ▸ template **Universal 3D** ▸ choose a new, empty folder ▸ **Create**. Close the Editor once it has opened.
-2. In that folder:
-   ```
-   git init
-   git remote add origin https://github.com/ReefyBlue/devolution.git
-   git fetch origin
-   git checkout -t origin/claude/quayops-sts-crane-0t64lz
-   ```
-3. Reopen the project from Hub.
-4. Package Manager ▸ **+** ▸ *Install package by name…* ▸ `com.unity.nuget.newtonsoft-json`.
-5. Project Settings ▸ Player ▸ *Active Input Handling* = **Input System Package (New)**.
-6. Package Manager ▸ **+** ▸ *Install package from git URL…* ▸ `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main` (MCP for Unity). The setup wizard that opens checks Python and uv; then configure **Claude Code** (or later *Window ▸ MCP for Unity ▸ Configure All Detected Clients*). Claude Code talks to the bridge over HTTP (`localhost:8080`), so the server must show as running in *Window ▸ MCP for Unity*.
-7. Start Claude Code in the project folder with the Editor open and run `/mcp`: the Unity server must show as connected. Then ask it to re-run Step 0 via MCP and implement Phase 1 (see `CLAUDE.md`).
-
-## Controls (proposed for Phase 1; the input map stays editable)
+## Controls (Phase 1; bindings in `config/controls.json`)
 
 | Action | Keyboard / mouse | Gamepad |
 |---|---|---|
 | Trolley waterside / landside | W / S | Left stick Y |
 | Gantry | A / D | D-pad left / right |
-| Hoist raise / lower | ↑ / ↓ | Right stick Y |
+| Hoist raise / lower | ↑ / ↓ | Right stick Y (push forward = lower) |
 | Creep (hold) | Left Shift | LB |
 | Twistlocks lock / unlock | Space | A |
 | Spreader 20 / 40 / 45 ft | 1 / 2 / 3 | D-pad up / down |
 | Flippers | F | Y |
-| Anti-sway toggle | T | X (proposed) |
-| Boom (hold + hoist axis) | B + ↑/↓ | RB + right stick Y (proposed) |
-| Look | Mouse (hold right button) | LT + right stick (proposed) |
+| Anti-sway toggle | T | X |
+| Boom (hold + hoist axis) | B + ↑/↓ | RB + right stick Y |
+| Look | Mouse, hold right button | LT + right stick |
 | Camera toggle (cabin / orbit) | C | View / Back |
+| Tuning panel | F10 | – |
 
 ## How to test each phase
 
@@ -78,4 +55,4 @@ Filled in at the end of each phase.
 
 ## Known issues
 
-- Step 0 could not be run: no Unity Editor or Unity MCP in the cloud session that produced Step 1. Nothing has been compiled or run in Unity yet.
+- The frame rate can only be judged on your own machine: the automated checks run in a headless browser with software rendering.

@@ -2,7 +2,7 @@
 
 > **Draft for review (Step 1). This is the loader specification for Phase 2.** It lists every check the ScenarioLoader runs, its severity and the message it prints. Rule ids are stable: each one gets an EditMode test in Phase 2.
 
-The field reference is [`SCENARIO_FORMAT.md`](SCENARIO_FORMAT.md). The JSON Schema ([`quayops-scenario.v1.schema.json`](../Assets/QuayOps/Scenarios/Schema/quayops-scenario.v1.schema.json)) catches most of group A in your editor as you type. The loader is the authority: it runs every group, A to I, and collects **every** problem before it reports.
+The field reference is [`SCENARIO_FORMAT.md`](SCENARIO_FORMAT.md). The JSON Schema ([`quayops-scenario.v1.schema.json`](../scenarios/Schema/quayops-scenario.v1.schema.json)) catches most of group A in your editor as you type. The loader is the authority: it runs every group, A to I, and collects **every** problem before it reports.
 
 ## How the loader reports
 
@@ -20,9 +20,9 @@ read text → pre-pass (syntax, comments, duplicate keys, line:column) → JSON 
 | **info** | A note, e.g. where the crane starts. Shown with the warnings. |
 
 - **Message format:** `<JSON path> [box, slot or move]: <what is wrong> — <how to fix it>`. Box context reads `bayPlan[13] ONEU1159375 @ 22-06-86`; move context reads `workQueue[10] M012 hatchcover 22-2`.
-- **Line and column:** in Unity every message also carries the line and column of the JSON token, e.g. `(line 212:9)`. The prototype prints them only for the pre-pass (A01–A03).
+- **Line and column:** in the app every message also carries the line and column of the JSON token, e.g. `(line 212:9)`. The prototype prints them only for the pre-pass (A01–A03).
 - **Consequential errors:** one fault can cause more than one line (a box that cannot be placed is not simulated later, H29). If `vessel`, `crane` or `yardSide` are too broken to build the vessel geometry, groups D–F and H and the checks of G and I that need the geometry are skipped; group C, the static checks of G and the rest of I still run (A36). A malformed slot is reported once (A12, not again as D28).
-- **Where the messages come from:** every message below is the exact output of a prototype of these checks (a Node.js script used to verify the Step 1 files) for a copy of the example [`deepsea-bay22-mixed.json`](../Assets/QuayOps/Scenarios/deepsea-bay22-mixed.json) with **one** fault put in. Rules on lone 20 ft bays and raised hold floors use a small feeder test scenario instead (lone bay 01, then 40 ft bays 04, 08 … 32). Rows marked *planned wording* are not in the prototype; their wording is a proposal. The final Unity wording may still be polished in Phase 2, but the checks and severities are as listed.
+- **Where the messages come from:** every message below is the exact output of a prototype of these checks (a Node.js script used to verify the Step 1 files) for a copy of the example [`deepsea-bay22-mixed.json`](../scenarios/deepsea-bay22-mixed.json) with **one** fault put in. Rules on lone 20 ft bays and raised hold floors use a small feeder test scenario instead (lone bay 01, then 40 ft bays 04, 08 … 32). Rows marked *planned wording* are not in the prototype; their wording is a proposal. The final Unity wording may still be polished in Phase 2, but the checks and severities are as listed.
 - **Totals:** 225 rules: 183 errors, 37 warnings, 5 info; 4 with planned wording.
 
 ## A. Parse and structure

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://quayops.local/schema/quayops-scenario.v1.schema.json",
   "title": "QuayOps scenario, format v1",
-  "description": "A QuayOps STS quay crane scenario: the vessel and its bay plan on arrival, the load list, the work queue of crane moves, the yard side under the crane, environment, crane start state and rules. Units are SI and carried in the field-name suffix (_m metres, _cm centimetres, _t tonnes, _s seconds, _kn knots, _deg degrees, _mps m/s, _C °C). Every object is strict: unknown keys are errors. Plain JSON only: duplicate keys and comments are errors; an integer written as 20.0 is accepted. Every `default` is a fixed constant of format v1 (changed only with a new schemaVersion): write only what differs from the defaults; an explicit value pins it. Exception: omitted rules fields come from the tunable RulesDefaults asset. This schema checks structure, types, enums, ranges, patterns and simple conditionals only. The ScenarioLoader performs further checks on load: ISO 6346 and IMO check digits, duplicate ids, cross-references between work queue, bay plan, load list and yard side, bay/row/tier existence for this vessel, physical stowage, hatch cover coverage, crane reach, and a sequence dry run of the work queue.",
+  "description": "A QuayOps STS quay crane scenario: the vessel and its bay plan on arrival, the load list, the work queue of crane moves, the yard side under the crane, environment, crane start state and rules. Units are SI and carried in the field-name suffix (_m metres, _cm centimetres, _t tonnes, _s seconds, _kn knots, _deg degrees, _mps m/s, _C °C). Every object is strict: unknown keys are errors. Plain JSON only: duplicate keys and comments are errors; an integer written as 20.0 is accepted. Every `default` is a fixed constant of format v1 (changed only with a new schemaVersion): write only what differs from the defaults; an explicit value pins it. Exception: omitted rules fields come from the tunable rules-defaults profile. This schema checks structure, types, enums, ranges, patterns and simple conditionals only. The ScenarioLoader performs further checks on load: ISO 6346 and IMO check digits, duplicate ids, cross-references between work queue, bay plan, load list and yard side, bay/row/tier existence for this vessel, physical stowage, hatch cover coverage, crane reach, and a sequence dry run of the work queue.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "scenario", "vessel", "bayPlan", "workQueue", "yardSide", "crane"],
@@ -922,7 +922,7 @@
     },
     "rules": {
       "type": "object",
-      "description": "Pass/fail thresholds and targets. All fields optional. Unlike the rest of the format, an omitted rules field is taken from the RulesDefaults asset (tunable in the Inspector); the defaults shown here are its factory values. Write a field to pin it for this scenario.",
+      "description": "Pass/fail thresholds and targets. All fields optional. Unlike the rest of the format, an omitted rules field is taken from the rules-defaults profile (tunable in the app's tuning panel); the defaults shown here are its factory values. Write a field to pin it for this scenario.",
       "additionalProperties": false,
       "properties": {
         "hardLanding_mps": {

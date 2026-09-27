@@ -1,10 +1,10 @@
 # QuayOps: Step 1 addendum, browser build without a game engine
 
-Branch `claude/quayops-sts-crane-0t64lz` · status: **waiting for your go-ahead** · 2026-09-27
+Branch `claude/quayops-sts-crane-0t64lz` · status: **approved 2026-09-27** (all four questions: defaults) · 2026-09-27
 
 **Proposal:** build QuayOps as a 3D simulator that runs in a web browser (TypeScript + Three.js), not in Unity. You install nothing and open a link, and Claude Code can build, run and test every step itself, including from a cloud session. The crane design, realism numbers, scenario format and phase gates stay as approved. Only the Unity-specific parts of `STEP1_PROPOSAL.md` are replaced, as listed in section 2.
 
-Reply "OK" to switch, or "stay with Unity" to keep the approved plan.
+**Decision (2026-09-27):** OK, switch to the browser build; defaults for the questions in section 6.
 
 ---
 
@@ -55,7 +55,7 @@ Reply "OK" to switch, or "stay with Unity" to keep the approved plan.
 ├─ docs/        BRIEF · STEP1_PROPOSAL · STEP1_WEB_ADDENDUM · SCENARIO_FORMAT · VALIDATION_RULES
 ├─ config/      crane-SPP-65 · drive-gantry · drive-trolley · hoist · boom · spreader · sway ·
 │               containers · operator-palette · camera · hud · audio · rules-defaults · controls (.json)
-├─ scenarios/   *.json · schema/quayops-scenario.v1.schema.json      (moved from Assets/QuayOps/Scenarios)
+├─ scenarios/   *.json · Schema/quayops-scenario.v1.schema.json      (moved from Assets/QuayOps/Scenarios)
 ├─ src/
 │  ├─ core/     quay frame, units, fixed-step loop, ramped axis, slot address, ISO 6346, wind
 │  ├─ crane/    gantry, trolley, hoist, boom, sway model, anti-sway, spreader, twistlocks,

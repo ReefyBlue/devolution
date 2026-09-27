@@ -1,5 +1,7 @@
 # QuayOps: Step 0 report and Step 1 proposal
 
+> **Platform changed 2026-09-27:** QuayOps is built for the browser (TypeScript + Three.js) instead of Unity; see `STEP1_WEB_ADDENDUM.md`. The addendum replaces the Unity-specific parts of this document (§0 and §1, §2, the ScriptableObject part of §4, §5.1, §5.2, §5.11, §5.12, §5.14 and the file locations in §6). Everything else here still applies.
+
 Branch `claude/quayops-sts-crane-0t64lz` · status: **approved 2026-09-27** (all defaults accepted, option A) · revised 2026-09-27
 
 Other Step 1 files on this branch:

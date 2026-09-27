@@ -4,19 +4,19 @@
 
 A scenario is one JSON file: the vessel alongside with its bay plan on arrival, the export boxes, the work queue of crane moves in order, the yard side under the crane, the environment, the crane's start state and the rules. This page lists every field. Every check the loader runs, with its message, is in [`VALIDATION_RULES.md`](VALIDATION_RULES.md).
 
-- **Example:** [`deepsea-bay22-mixed.json`](../Assets/QuayOps/Scenarios/deepsea-bay22-mixed.json), scenario (b): bay 22 of a deep-sea vessel, 30 moves.
-- **Schema:** [`quayops-scenario.v1.schema.json`](../Assets/QuayOps/Scenarios/Schema/quayops-scenario.v1.schema.json). Put `"$schema": "./Schema/quayops-scenario.v1.schema.json"` at the top of a file: VS Code and Rider then complete field names, show each field's meaning, unit and default on hover, and underline structural mistakes as you type. The simulator ignores `$schema`.
+- **Example:** [`deepsea-bay22-mixed.json`](../scenarios/deepsea-bay22-mixed.json), scenario (b): bay 22 of a deep-sea vessel, 30 moves.
+- **Schema:** [`quayops-scenario.v1.schema.json`](../scenarios/Schema/quayops-scenario.v1.schema.json). Put `"$schema": "./Schema/quayops-scenario.v1.schema.json"` at the top of a file: VS Code and Rider then complete field names, show each field's meaning, unit and default on hover, and underline structural mistakes as you type. The simulator ignores `$schema`.
 
 | What | Where |
 |---|---|
-| Bundled scenarios | Editor: `Assets/QuayOps/Scenarios/*.json` (top level). A build copies each of these files to `StreamingAssets/QuayOps/Scenarios/` (read-only) and the schema to `StreamingAssets/QuayOps/Scenarios/Schema/`. |
-| Your own scenarios | `<persistentDataPath>/Scenarios/` (Windows: `%USERPROFILE%\AppData\LocalLow\<company>\QuayOps\Scenarios\`), listed next to the bundled ones. |
-| Schema | `Assets/QuayOps/Scenarios/Schema/`. On first run the game also writes it to `<persistentDataPath>/Scenarios/Schema/`, copied from `StreamingAssets/QuayOps/Scenarios/Schema/` in a build and from `Assets/QuayOps/Scenarios/Schema/` in the Editor, so the `$schema` line works in copied files too. |
-| Results (Phase 3) | `<scenarioId>.result-<yyyyMMdd-HHmm>.json`. Editor, bundled scenario: `Assets/QuayOps/Scenarios/Results~/` (the `~` keeps Unity from importing it). Your scenario: `<persistentDataPath>/Scenarios/Results/`. Build, bundled scenario: `<persistentDataPath>/Results/`. The scenario browser lists top-level `*.json` files only, so schema and result folders never show up as scenarios. |
+| Bundled scenarios | `scenarios/*.json` (top level), built into the app. |
+| Your own scenarios | Opened in the app with *Open scenario…* or by dragging the file onto it; the app remembers them in your browser. |
+| Schema | `scenarios/Schema/`. Keep a copy next to your own files so the `$schema` line works while you write them. |
+| Results (Phase 3) | `<scenarioId>.result-<yyyyMMdd-HHmm>.json`, downloaded by the browser (a browser cannot write next to the scenario file). |
 
 **Plain JSON.** UTF-8. Comments, trailing commas and duplicate keys are errors. JSON numbers cannot have leading zeros: write `"bay": 2`, not `02`. Where two digits matter the value is a string: `"slot": "02-00-82"`. **Lists** of rows, tiers and bays accept both forms: rows `"04"` or `4`, tiers `82` or `"82"`, bays `22`, `"22"` or `"022"`. This page writes rows as strings and tiers and bays as integers. An integer written as `20.0` is accepted.
 
-**Defaults.** Write only what differs from the defaults; an explicit value pins it. The defaults in the tables below are fixed constants of format v1 and change only with a new `schemaVersion`, so a file means the same on every machine. The one exception is `rules`: an omitted rules field comes from the RulesDefaults asset, which you tune in the Inspector.
+**Defaults.** Write only what differs from the defaults; an explicit value pins it. The defaults in the tables below are fixed constants of format v1 and change only with a new `schemaVersion`, so a file means the same on every machine. The one exception is `rules`: an omitted rules field comes from the rules-defaults profile, which you tune in the app's tuning panel.
 
 **Snippets.** Each JSON snippet is labelled. *Excerpt*: copied from the example file and identical to it, though keys and list items may be left out. *Illustrative*: not from the example, but schema-valid. A check script verifies both.
 
@@ -143,7 +143,7 @@ In the tables, **Default** reads: **req** = required; a value = optional with th
 | `yardSide` | object | **req** | Transport, lanes, buffer, laydowns, truck timing ([§10](#10-yardside)). |
 | `environment` | object | *opt* | Wind, time, weather, sea state ([§11](#11-environment)); all defaults if omitted. |
 | `crane` | object | **req** | Crane profile and start state ([§12](#12-crane)). |
-| `rules` | object | *opt* | Tolerances, targets, penalties ([§13](#13-rules)); RulesDefaults if omitted. |
+| `rules` | object | *opt* | Tolerances, targets, penalties ([§13](#13-rules)); rules-defaults profile if omitted. |
 
 Every object is strict: an unknown key is an error, with a did-you-mean suggestion.
 
@@ -513,7 +513,7 @@ The resolved start mark is also the default `quayMark_m` of the quay buffer and 
 QC04 starts abeam bay 22 (quay mark 509.0) and may gantry between 449 and 569, but stays above 485 while QC05 works bay 38 (quay mark 455.4).
 
 ## 13. `rules`
-Omitted fields come from the RulesDefaults asset, tunable in the Inspector (factory values below); write a field to pin it for this scenario.
+Omitted fields come from the rules-defaults profile, tunable in the app's tuning panel (factory values below); write a field to pin it for this scenario.
 
 | Field | Type | Default | Meaning |
 |---|---|---|---|
