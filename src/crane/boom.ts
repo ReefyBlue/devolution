@@ -41,10 +41,13 @@ export class Boom {
   /** demand +1 = raise, −1 = lower. */
   step(dt: number, demand: number, permits: BoomPermits): void {
     let d = demand;
-    this.interlock = '';
-    if (d !== 0) {
-      this.interlock = !permits.trolleyParked ? 'PARK TROLLEY' : !permits.hoistAtTop ? 'HOIST TO TOP' : !permits.gantryStopped ? 'STOP GANTRY' : '';
-      if (this.interlock) d = 0;
+    const moving = this.axis.velocity !== 0;
+    const missing = !permits.trolleyParked ? 'PARK TROLLEY' : !permits.hoistAtTop ? 'HOIST TO TOP' : !permits.gantryStopped ? 'STOP GANTRY' : '';
+    // Checked while commanded and while the boom still runs down its soft stop; a trip in motion brakes at once.
+    this.interlock = d !== 0 || moving ? missing : '';
+    if (this.interlock) {
+      d = 0;
+      if (moving) this.axis.reset(this.axis.position);
     }
 
     // At the raised angle the latch engages by itself; lowering first releases it, then the boom moves.

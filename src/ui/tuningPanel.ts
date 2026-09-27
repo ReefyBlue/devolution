@@ -59,7 +59,8 @@ function addFields(folder: GUI, spec: ObjSpec, target: Target, onChange: () => v
     else if (field.kind === 'boolean') c = folder.add(target, key);
     else c = folder.add({ [key]: Array.isArray(value) ? value.join(', ') : String(value) }, key);
     if (locked || field.kind === 'text' || field.kind === 'list') c.disable();
-    else c.onChange(onChange);
+    // Hand the keys back to the crane once a value is entered.
+    else c.onChange(onChange).onFinishChange(() => (document.activeElement as HTMLElement | null)?.blur());
   }
 }
 

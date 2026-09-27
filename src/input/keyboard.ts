@@ -1,8 +1,9 @@
 // Keyboard state by KeyboardEvent.code: keys held now, and presses latched until they are taken.
 
-/** Typing in a form field (tuning panel) must not drive the crane. */
+/** Typing in a form field (tuning panel) must not drive the crane; function keys (F10) still work. */
 const isTyping = (e: KeyboardEvent): boolean =>
-  e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement;
+  !/^F\d+$/.test(e.code) &&
+  (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement);
 
 export class Keyboard {
   private readonly held = new Set<string>();

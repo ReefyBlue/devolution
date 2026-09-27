@@ -12,8 +12,9 @@ One entry per phase.
 - Rope-fall pendulum sway on both axes (period 2π√(ℓ/g), hoisting term, wind force per face with gusts), electronic and rope anti-sway (T).
 - Spreader: telescope 20/40/45 ft, twistlocks with lock/unlock interlocks, flippers with capture assist, landing pins with clamp, hard-landing alarm, slack-rope stop, grip and release with placement offset, chassis clearing after 5 s.
 - Cabin camera (mouse and gamepad look) and orbit camera (C); HTML HUD with move, timer, last placement, wind, drive readouts, abeam bay/row, spreader state, corner lamps and sway bar; procedural sounds (twistlock clunk, landing thud, hard-landing alarm, refusal buzz, gantry bell).
+- Fixes from the pre-test code review: twistlock turns abort if the spreader lifts off; anti-sway leaves a steady wind offset alone (no creeping drives); lift-off starts the swing from the real offset and speed without a height jump; boom interlocks also stop a boom that is still running; the landing pins cannot be passed at any hoist speed; wrong-position and missed test moves; the tuning panel hands the keys back after an edit.
 - Keyboard and Gamepad API input from `config/controls.json`, with button presses latched until a simulation step takes them; fixed 0.02 s step with render interpolation.
-- Tests: 61 unit tests (Vitest) and a headless smoke run (Playwright): drives into every limit, sway periods 9.18 / 12.52 s at +30 / +12 m, anti-sway decay, pick 14-02-88 and place it on L1 centre through the gamepad and keyboard paths, HUD, camera toggle and tuning panel.
+- Tests: 67 unit tests (Vitest) and a headless smoke run (Playwright): drives into every limit, sway periods 9.18 / 12.52 s at +30 / +12 m, anti-sway decay, pick 14-02-88 and place it on L1 centre through the gamepad and keyboard paths, HUD, camera toggle and tuning panel.
 
 ## [Unreleased]: Step 1 proposal (approved 2026-09-27: all defaults; then browser build instead of Unity)
 

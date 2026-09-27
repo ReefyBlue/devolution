@@ -68,13 +68,19 @@ export class SwayModel {
     this.gantry.angle = this.gantry.rate = 0;
   }
 
-  /** Lift-off from a landed position: the pendulum starts from the real offset between sheaves and load. */
-  liftOff(offsetTrolley: number, offsetGantry: number, length: number): void {
-    this.hold('trolley', offsetTrolley, length);
-    this.hold('gantry', offsetGantry, length);
+  /**
+   * Lift-off from a landed position: the pendulum starts from the real offset between sheaves and load, and
+   * because the load was standing still, it swings back relative to sheaves that are moving.
+   */
+  liftOff(offsetTrolley: number, offsetGantry: number, length: number, pivotSpeed: { trolley: number; gantry: number }): void {
+    const len = Math.max(this.limits.minLength, length);
+    this.hold('trolley', offsetTrolley, len);
+    this.hold('gantry', offsetGantry, len);
+    this.trolley.rate = -pivotSpeed.trolley / (len * Math.cos(this.trolley.angle));
+    this.gantry.rate = -pivotSpeed.gantry / (len * Math.cos(this.gantry.angle));
   }
 
-  /** Holds one axis at a horizontal load offset (m), at rest: lift-off, or flippers guiding the spreader. */
+  /** Holds one axis at a horizontal load offset (m), at rest: flippers guiding the spreader, or lift-off. */
   hold(axis: 'trolley' | 'gantry', offset: number, length: number): void {
     const len = Math.max(this.limits.minLength, length);
     const max = this.limits.maxAngle;

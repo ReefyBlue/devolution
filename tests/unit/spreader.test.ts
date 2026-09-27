@@ -151,3 +151,60 @@ describe('spreader interlocks', () => {
     expect(crane.load.pose.y).toBeGreaterThan(0);
   });
 });
+
+describe('review fixes: turning locks, lift-off', () => {
+  it('aborts a twistlock turn when the spreader lifts off, and never grips in the air', () => {
+    const { crane } = setup();
+    events.length = 0;
+    lowerOnto(crane, 0);
+    run(crane, { toggleLock: true }, FIXED_DT);
+    expect(events).toContainEqual({ kind: 'refused', action: 'lock', reason: 'NOT ON ONE BOX' });
+    // Unlock turn on a seated box, then the load is lifted mid-turn.
+    crane.spreader.twistlocks.state = 'locked';
+    run(crane, { toggleLock: true }, FIXED_DT);
+    expect(crane.spreader.twistlocks.state).toBe('unlocking');
+    crane.hoist.axis.reset(crane.load.pose.y + 1);
+    run(crane, {}, 1);
+    expect(crane.spreader.twistlocks.state).toBe('locked');
+    expect(events).toContainEqual({ kind: 'refused', action: 'unlock', reason: 'LIFTED WHILE TURNING' });
+  });
+
+  /** Lands at full speed (about 3 m of slack rope), then moves the trolley 2.4 m so the ropes lean. */
+  function landedWithLean(): Crane {
+    const { crane } = setup();
+    run(crane, { hoist: -1 }, 30, () => allLanded(crane.landing));
+    run(crane, { trolley: 0.1 }, 6);
+    expect(crane.load.rest).not.toBeNull();
+    expect(Math.abs(crane.load.pose.fwr - crane.trolley.fwr)).toBeGreaterThan(1);
+    return crane;
+  }
+
+  /** Hoists (with the given commands) until lift-off; returns the load's worst step in height and speed just after. */
+  function liftOff(crane: Crane, cmd: Partial<CraneCommands>): { rise: number; speed: number } {
+    let before = { ...crane.load.pose };
+    for (let t = 0; t < 10 && crane.load.rest; t += FIXED_DT) {
+      before = { ...crane.load.pose };
+      run(crane, cmd, FIXED_DT);
+    }
+    expect(crane.load.rest).toBeNull();
+    let rise = 0;
+    let speed = 0;
+    for (let i = 0; i < 3; i++) {
+      rise = Math.max(rise, crane.load.pose.y - before.y);
+      speed = Math.max(speed, Math.abs(crane.load.pose.fwr - before.fwr) / FIXED_DT);
+      before = { ...crane.load.pose };
+      run(crane, cmd, FIXED_DT);
+    }
+    return { rise, speed };
+  }
+
+  it('lifts off leaning ropes without a step up in height', () => {
+    const { rise } = liftOff(landedWithLean(), { hoist: 1, trolley: 0.1, creep: true });
+    expect(rise).toBeLessThan(0.3 * FIXED_DT + 0.005); // creep hoisting only, no ℓ(1 − cos θ) jump
+  });
+
+  it('lifts off from rest: the load does not jump to the trolley speed', () => {
+    const { speed } = liftOff(landedWithLean(), { hoist: 1, trolley: 0.5 });
+    expect(speed).toBeLessThan(0.3); // the trolley runs at up to 2 m/s
+  });
+});

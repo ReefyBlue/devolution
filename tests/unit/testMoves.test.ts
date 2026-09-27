@@ -38,6 +38,20 @@ describe('TestMoves', () => {
   });
 });
 
+describe('TestMoves: wrong position and missed moves', () => {
+  it('flags a wrong chassis position, and a box taken away counts as missed and the next move starts', () => {
+    const { world, moves } = setup();
+    const box = world.container(moves.boxId ?? '');
+    if (!box) throw new Error('no box');
+    box.location = { kind: 'chassis', position: 'front' };
+    expect(moves.onEvent({ kind: 'placed', boxId: box.id, label: 'L1 front', dx_cm: 0, dz_cm: 0, yaw_deg: 0 }, 50)).toBe('wrongPosition');
+    expect(moves.onEvent({ kind: 'cleared', boxId: box.id, laneId: 'L1' }, 55)).toBe('missed');
+    expect(moves.last?.outcome).toBe('missed');
+    expect(moves.current?.from).toBe('18-04-88');
+    expect(moves.boxId).not.toBeNull();
+  });
+});
+
 describe('abeam', () => {
   it('names bay 14 row 02 over that stack and nothing over the quay', () => {
     const { world } = setup();

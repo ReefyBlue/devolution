@@ -70,7 +70,8 @@ export const PROFILE_SPECS = {
   sway: obj({
     naturalDamping: num(0, 1, '1/s', 0.005),
     substeps: int(1, 32),
-    minRopeFall_m: num(0.1, 5, 'm', 0.1),
+    // Below the shortest real rope fall (2.9 m at the upper limit), so the swing uses the true length.
+    minRopeFall_m: num(0.1, 2.5, 'm', 0.1),
     maxAngle_deg: num(5, 45, '°', 1),
     dragCoefficient: num(0.5, 2.5, '', 0.05),
     spreaderAreaSide_m2: num(0, 30, 'm²', 0.5),

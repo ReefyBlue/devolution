@@ -222,3 +222,33 @@ describe('Sway on the crane', () => {
     expect(Math.abs(crane.sway.offsets(crane.ropeFall).gantry)).toBeLessThan(1e-6);
   });
 });
+
+describe('review fixes: wind with anti-sway, boom trip', () => {
+  it('electronic anti-sway leaves a steady 20 kn wind offset alone: the drives stand', () => {
+    const { profiles, scene } = loadProfiles();
+    scene.wind.speed_kn = 20;
+    scene.wind.fromDirection_deg = 45;
+    const crane = new Crane(profiles, new World(scene, profiles));
+    crane.antiSway = true;
+    hold(crane, crane.trolley.axis, {}, 90);
+    const x = crane.gantry.x;
+    const fwr = crane.trolley.fwr;
+    hold(crane, crane.trolley.axis, {}, 30);
+    expect(Math.abs(crane.trolley.fwr - fwr)).toBeLessThan(0.005);
+    expect(Math.abs(crane.gantry.x - x)).toBeLessThan(0.005);
+    expect(crane.gantry.travelling).toBe(false);
+    expect(crane.sway.offsets(crane.ropeFall).trolley).toBeGreaterThan(0.02);
+  });
+
+  it('a boom interlock trip while the boom runs stops it at once', () => {
+    const crane = makeCrane();
+    hold(crane, crane.hoist.axis, { hoist: 1 }, 30);
+    hold(crane, crane.boom.axis, { boom: 1 }, 20);
+    expect(crane.boom.axis.velocity).toBeGreaterThan(0);
+    const angle = crane.boom.axis.position;
+    hold(crane, crane.boom.axis, { boom: 1, gantry: 1 }, 0.1);
+    expect(crane.boom.axis.velocity).toBe(0);
+    expect(crane.boom.interlock).toBe('STOP GANTRY');
+    expect(crane.boom.axis.position - angle).toBeLessThan(0.02); // at most the one step before the trip registers
+  });
+});

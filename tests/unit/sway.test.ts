@@ -67,7 +67,7 @@ describe('SwayModel', () => {
 
   it('lifts off from a landed offset with the matching angle', () => {
     const sway = new SwayModel(limits);
-    sway.liftOff(0.5, 0, 20);
+    sway.liftOff(0.5, 0, 20, { trolley: 0, gantry: 0 });
     expect(sway.offsets(20).trolley).toBeCloseTo(0.5, 6);
   });
 });

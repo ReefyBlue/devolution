@@ -9,8 +9,9 @@ export interface Footprint {
   /** World X and Z of the centre of the landing plane (twistlocks, or a carried box's bottom castings). */
   x: number;
   z: number;
-  /** Height of that plane in the candidate pose. */
+  /** Height of that plane in the candidate pose, and where it was at the start of the step. */
   y: number;
+  fromY: number;
   castingLength: number;
   castingWidth: number;
   /** A carried box lands on stacking cones, so box tops count the cone gap. */
@@ -40,8 +41,9 @@ export function senseCorners(world: World, profiles: Profiles, f: Footprint): La
     // Corner names as seen from the cabin facing the water: W = waterside (−Z), L = landside; L/R = −X/+X.
     const x = f.x + (corner.endsWith('L') ? -0.5 : 0.5) * f.castingLength;
     const z = f.z + (corner.startsWith('W') ? -0.5 : 0.5) * f.castingWidth;
-    // The pin ray starts pinRayOffset above the plane and reaches landingPinTravel below it.
-    const s = world.surfaceUnder(x, z, f.y + sp.pinRayOffset_m - gap, f.ignore);
+    // The pin ray starts pinRayOffset above the plane (or above where it came from, if higher) and reaches
+    // landingPinTravel below it.
+    const s = world.surfaceUnder(x, z, Math.max(f.y, f.fromY) + sp.pinRayOffset_m - gap, f.ignore);
     const top = s ? s.top + (s.kind === 'container' ? gap : 0) : -Infinity;
     const hit = s !== null && top >= f.y - sp.landingPinTravel_m;
     surfaces[corner] = hit ? s : null;

@@ -19,6 +19,12 @@ export class Twistlocks {
     this.elapsed = 0;
   }
 
+  /** Stops a turn and returns the locks to where they started. */
+  abort(): void {
+    if (this.state === 'locking') this.state = 'open';
+    else if (this.state === 'unlocking') this.state = 'locked';
+  }
+
   /** Advances a turn; returns the state reached when a turn completes in this step. */
   step(dt: number): 'locked' | 'open' | null {
     if (!this.turning) return null;

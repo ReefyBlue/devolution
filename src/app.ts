@@ -65,8 +65,7 @@ export function startApp(host: HTMLElement): void {
   const report = (e: CraneEvent): void => {
     audio.play(e);
     eventLog.push(e);
-    const done = moves.results.length;
-    moves.onEvent(e, sim.time);
+    const update = moves.onEvent(e, sim.time);
     if (e.kind === 'landed' && e.hard) hud.flash(`▲ HARD LANDING ${e.speed.toFixed(1)} m/s`, 'alarm', 4);
     else if (e.kind === 'refused') hud.flash(`${e.action.toUpperCase()} REFUSED · ${e.reason}`, 'warn', 3);
     else if (e.kind === 'twistlocks') hud.flash(e.locked ? 'LOCKED' : 'UNLOCKED', 'ok', 1.5);
@@ -75,8 +74,10 @@ export function startApp(host: HTMLElement): void {
       lastPlacement = `Δ ${Math.hypot(e.dx_cm, e.dz_cm).toFixed(1)} cm · ${e.yaw_deg.toFixed(1)}°`;
       hud.flash(`PLACED ${e.label} · Δ ${e.dx_cm.toFixed(1)} / ${e.dz_cm.toFixed(1)} cm`, 'ok', 5);
     }
-    const result = moves.results[done];
-    if (result) hud.flash(`MOVE DONE ${result.move.from} ─► ${result.move.to} in ${formatClock(result.time_s)}`, 'ok', 6);
+    const move = moves.last?.move ?? moves.current;
+    if (update === 'done' && move) hud.flash(`MOVE DONE ${move.from} ─► ${move.to} in ${formatClock(moves.last?.time_s ?? 0)}`, 'ok', 6);
+    if (update === 'wrongPosition' && moves.current) hud.flash(`WRONG POSITION: ${moves.current.to} ${moves.current.chassisPosition} expected`, 'warn', 6);
+    if (update === 'missed' && move) hud.flash(`MOVE MISSED ${move.from}: the tractor left with the box`, 'warn', 6);
   };
 
   const step = (): void => {

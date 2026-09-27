@@ -1,7 +1,7 @@
 // The STS crane in its fixed per-step order (proposal §5.3), and the view the renderer and HUD read.
 
 import type { Profiles } from '../config/profiles';
-import { degToRad, tonnesToKg } from '../core/units';
+import { degToRad, GRAVITY, tonnesToKg } from '../core/units';
 import { WindField } from '../core/wind';
 import { boxDims, type Container, type SizeFt } from '../sim/container';
 import { CORNERS, type CraneView } from '../sim/craneView';
@@ -98,23 +98,26 @@ export class Crane {
       else sp.telescope.select(cmd.spreaderSize);
     }
 
-    // 2. Electronic anti-sway: the drives chase the load, k × load offset on the speed reference (a = k·ℓ·θ̇).
+    // 2. Electronic anti-sway: the drives chase the load's swing, k × its offset from where the wind alone
+    //    would hold it, on the speed reference (a = k·ℓ·θ̇). A steady wind offset is left alone.
+    this.wind.step(dt);
+    const force = windForce(this.wind.components(), this.windAreas, s.dragCoefficient);
+    const weight = tonnesToKg(this.suspendedMass_t) * GRAVITY;
     const electronic = this.antiSway && s.antiSwayType !== 'rope';
     const ropeDamper = this.antiSway && s.antiSwayType !== 'electronic';
     const hanging = this.ropeFall;
     const offset = this.sway.offsets(hanging);
+    const windHold = (f: number): number => (hanging * f) / Math.hypot(f, weight);
     const k = electronic ? s.electronicGain : 0;
 
     // 3. Drives.
     this.boom.step(dt, cmd.boom, { trolleyParked: this.trolley.parked, hoistAtTop: this.hoist.atTop, gantryStopped: !this.gantry.travelling });
-    this.gantry.step(dt, cmd.gantry, cmd.creep, k * offset.gantry);
-    this.trolley.step(dt, cmd.trolley, cmd.creep, this.boom.down, k * offset.trolley);
+    this.gantry.step(dt, cmd.gantry, cmd.creep, k * (offset.gantry - windHold(force.gantry)));
+    this.trolley.step(dt, cmd.trolley, cmd.creep, this.boom.down, k * (offset.trolley - windHold(force.trolley)));
     this.hoist.step(dt, cmd.hoist, cmd.creep, anyLanded(this.landing), sp.twistlocks.turning);
 
     // 4. Pendulum, driven by the drives and the wind.
-    this.wind.step(dt);
-    const force = windForce(this.wind.components(), this.windAreas, s.dragCoefficient);
-    const mass = tonnesToKg(this.suspendedMass_t);
+    const mass = weight / GRAVITY;
     this.sway.step(dt, {
       length: hanging,
       lengthRate: -this.hoist.axis.velocity,
@@ -126,7 +129,7 @@ export class Crane {
     });
 
     // 5. Candidate pose; flippers funnel an empty spreader onto a box.
-    const pivot: Pivot = { x: this.gantry.x, fwr: this.trolley.fwr };
+    const pivot: Pivot = { x: this.gantry.x, fwr: this.trolley.fwr, vx: this.gantry.axis.velocity, vfwr: this.trolley.axis.velocity };
     const ropeFall = this.ropeFall;
     const cand = this.load.candidate(this.sway, pivot, this.hoist.height, ropeFall);
     if (!this.load.rest && !this.carried && sp.flippers.fullyDown) {
@@ -134,14 +137,20 @@ export class Crane {
     }
 
     // 6–8. Landing pins from the candidate pose, clamp, then move.
-    this.landing = this.sense(cand);
+    this.landing = this.sense(cand, this.load.pose.y);
     const clampedY = this.landing.y + this.carriedHeight;
     const contactSpeed = this.load.settle(cand, clampedY, anyLanded(this.landing), this.sway, pivot, ropeFall, dt);
     if (contactSpeed !== null) {
       this.events.push({ kind: 'landed', speed: contactSpeed, hard: contactSpeed > this.profiles.rules.hardLanding_mps });
     }
 
-    // 9. Twistlocks, telescope, flippers; the grip carries the box.
+    // 9. Twistlocks, telescope, flippers; the grip carries the box. A turn needs all four corners landed
+    //    throughout; if the spreader lifts off, the locks go back.
+    if (sp.twistlocks.turning && !allLanded(this.landing)) {
+      const action = sp.twistlocks.state === 'locking' ? 'lock' : 'unlock';
+      sp.twistlocks.abort();
+      this.events.push({ kind: 'refused', action, reason: 'LIFTED WHILE TURNING' });
+    }
     if (cmd.toggleLock && !sp.twistlocks.turning) this.requestLock();
     const turned = sp.twistlocks.step(dt);
     if (turned === 'locked') this.grip();
@@ -217,8 +226,11 @@ export class Crane {
     return this.carried ? boxDims(this.carried.box, this.profiles.containers).height : 0;
   }
 
-  /** Landing pins from a pose: the twistlock plane, or the bottom castings of a carried box. */
-  private sense(pose: { x: number; fwr: number; y: number }): Landing {
+  /**
+   * Landing pins from a pose: the twistlock plane, or the bottom castings of a carried box. `fromY` is the
+   * height the load came down from this step, so a fast descent cannot pass through a surface.
+   */
+  private sense(pose: { x: number; fwr: number; y: number }, fromY = pose.y): Landing {
     const frame = this.world.frame;
     const c = this.carried;
     const cp = this.profiles.containers;
@@ -226,6 +238,7 @@ export class Crane {
       x: pose.x + (c?.dx ?? 0),
       z: frame.worldZ(pose.fwr + (c?.dfwr ?? 0)),
       y: pose.y - this.carriedHeight,
+      fromY: fromY - this.carriedHeight,
       castingLength: c ? boxDims(c.box, cp).castingLength : this.spreader.telescope.length,
       castingWidth: cp.castingSpacingWidth_m,
       carrying: c !== null,
@@ -250,7 +263,11 @@ export class Crane {
   private grip(): void {
     const id = this.landing.surfaces.WL?.containerId;
     const box = id ? this.world.container(id) : undefined;
-    if (!box) return;
+    if (!box) {
+      this.spreader.twistlocks.state = 'open';
+      this.events.push({ kind: 'refused', action: 'lock', reason: 'NO BOX UNDER THE SPREADER' });
+      return;
+    }
     const pose = this.load.pose;
     this.carried = { box, dx: box.x - pose.x, dfwr: this.world.frame.fromWatersideRail(box.z) - pose.fwr };
     box.location = { kind: 'spreader' };

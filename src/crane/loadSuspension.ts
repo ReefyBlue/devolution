@@ -10,10 +10,12 @@ export interface LoadPose {
   y: number;
 }
 
-/** The trolley sheaves the load hangs from: world X and fromWatersideRail_m. */
+/** The trolley sheaves the load hangs from: world X and fromWatersideRail_m, and their speeds (m/s). */
 export interface Pivot {
   x: number;
   fwr: number;
+  vx: number;
+  vfwr: number;
 }
 
 export class LoadSuspension {
@@ -35,8 +37,12 @@ export class LoadSuspension {
       const reach = ropeFall * Math.sin(sway.limits.maxAngle);
       this.rest.x = pivot.x + clampAbs(this.rest.x - pivot.x, reach);
       this.rest.fwr = pivot.fwr + clampAbs(this.rest.fwr - pivot.fwr, reach);
-      // Paying out below the resting height only slackens the ropes.
-      return { x: this.rest.x, fwr: this.rest.fwr, y: Math.max(ropeHeight, this.pose.y) };
+      // Leaning ropes hold the load higher than hanging straight; paying out below the resting height
+      // only slackens them.
+      const dx = this.rest.x - pivot.x;
+      const df = this.rest.fwr - pivot.fwr;
+      const lean = ropeFall - Math.sqrt(Math.max(0, ropeFall * ropeFall - dx * dx - df * df));
+      return { x: this.rest.x, fwr: this.rest.fwr, y: Math.max(ropeHeight + lean, this.pose.y) };
     }
     const off = sway.offsets(ropeFall);
     return { x: pivot.x + off.gantry, fwr: pivot.fwr + off.trolley, y: ropeHeight + sway.rise(ropeFall) };
@@ -55,7 +61,7 @@ export class LoadSuspension {
       }
       sway.ground();
     } else if (this.rest) {
-      sway.liftOff(this.rest.fwr - pivot.fwr, this.rest.x - pivot.x, ropeFall);
+      sway.liftOff(this.rest.fwr - pivot.fwr, this.rest.x - pivot.x, ropeFall, { trolley: pivot.vfwr, gantry: pivot.vx });
       this.rest = null;
     }
     this.pose = { x: candidate.x, fwr: candidate.fwr, y: clampedY };
