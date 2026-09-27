@@ -69,20 +69,42 @@ function mapFields(value: Spec, target: Target): Record<string, Spec> {
   return Object.fromEntries(Object.keys(target).map((k) => [k, value]));
 }
 
+/** File saving offered by the claude.ai viewer (its `downloads` capability). */
+interface ViewerDownloads {
+  save(request: { filename: string; data: string }): Promise<unknown>;
+}
+
+/**
+ * How Export saves a file: in the claude.ai viewer through its downloads capability (the viewer confirms),
+ * in the offline file as a plain browser download. Resolved once, before any click.
+ */
+const viewer = (window as unknown as { claude?: { use(name: string): Promise<unknown> } }).claude;
+let viewerDownloads: ViewerDownloads | null = null;
+void viewer
+  ?.use('downloads')
+  .then((d) => (viewerDownloads = d as ViewerDownloads | null))
+  .catch(() => undefined);
+
+function saveFile(file: string, text: string): void {
+  if (viewerDownloads) {
+    viewerDownloads.save({ filename: file, data: text }).catch((e: { code?: string }) => {
+      if (e.code !== 'declined') showJson(file, text);
+    });
+  } else if (viewer) {
+    // Framed without the capability: a page cannot download here, so show the text to copy.
+    showJson(file, text);
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    a.download = file;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+}
+
 function addExport(folder: GUI, file: string, profile: unknown): void {
   const json = (): string => `${JSON.stringify(profile, null, 2)}\n`;
-  folder.add(
-    {
-      export: (): void => {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([json()], { type: 'application/json' }));
-        a.download = file;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-      },
-    },
-    'export',
-  ).name(`Export ${file}`);
+  folder.add({ export: (): void => saveFile(file, json()) }, 'export').name(`Export ${file}`);
   const copy = (): void => {
     const text = json();
     const written = navigator.clipboard?.writeText(text);
@@ -92,13 +114,13 @@ function addExport(folder: GUI, file: string, profile: unknown): void {
   folder.add({ copy }, 'copy').name('Copy JSON');
 }
 
-/** Where the clipboard is refused: the JSON in a box, selected, to copy by hand. */
+/** Where saving or the clipboard is refused: the JSON in a box, selected, to copy by hand. */
 function showJson(file: string, text: string): void {
   const box = document.createElement('div');
   box.className = 'json-box';
   const label = document.createElement('label');
   label.htmlFor = 'json-box-text';
-  label.textContent = `${file}: the clipboard is blocked here. Press Ctrl+C (⌘C) to copy the selected text.`;
+  label.textContent = `${file}: saving is blocked here. Press Ctrl+C (⌘C) to copy the selected text.`;
   const area = document.createElement('textarea');
   area.id = 'json-box-text';
   area.readOnly = true;

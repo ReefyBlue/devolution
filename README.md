@@ -62,7 +62,7 @@ The test scene: the SPP-65 crane at quay mark 169.8 (abeam bay 14), trolley LS 1
 6. **Moves 2 to 4** work the same way. Move 4 (17-04-84) is a 20 ft box for the rear of the chassis: press 1 for the 20 ft spreader while hanging clear.
 7. **Interlocks and alarms.** Space while the spreader hangs gives LOCK or UNLOCK REFUSED. Landing faster than 0.5 m/s sounds the HARD LANDING alarm. 1/2/3 while landed or locked gives TELESCOPE REFUSED. Lowering after a landing stops on the slack-rope ramp. A twistlock turn needs all four corners landed until it finishes; lifting off mid-turn puts the locks back. A box set down in the wrong chassis position gives WRONG POSITION: pick it again before the tractor leaves (5 s), or the move counts as missed.
 8. **Wind.** F10 → *wind (test scene)*: set 20 kn from 90° (from the landside on this quay, which runs north). The hanging spreader drifts towards the water; gusts rise and fall between the mean and the gust speed.
-9. **Tuning.** F10 opens every profile with its allowed range; changes apply while you drive. *Copy JSON* (or *Export* in the offline file) gives you the profile file for `config/`.
+9. **Tuning.** F10 opens every profile with its allowed range; changes apply while you drive. *Export* saves the profile as its `config/` file (on the link the page asks you to confirm the save); *Copy JSON* puts it on the clipboard.
 10. **Frame rate.** Please check the crane feels smooth on your laptop (target 60 fps). In Chrome: DevTools → More tools → Rendering → Frame rendering stats.
 
 ## Known issues
@@ -73,5 +73,5 @@ The test scene: the SPP-65 crane at quay mark 169.8 (abeam bay 14), trolley LS 1
 - No contact detection yet: the spreader and a carried box can pass through a stack or the crane structure sideways (Phase 3 turns contacts into faults).
 - Deck stack only: no holds, cell guides or lashing bridges yet (they come with the vessel builder in Phase 2).
 - A spreader landed on the quay, a hatch cover or the chassis bed shows its corners as landed; locking there is refused.
-- On the claude.ai link the browser may block the gamepad, pointer lock or file downloads for the embedded page. *Copy JSON* works there; for the gamepad and *Export*, use the offline file.
+- On the claude.ai link the browser may block the gamepad or pointer lock for the embedded page (without pointer lock, right-drag still turns the view). If the gamepad does nothing there, use the offline file.
 - Placeholder primitive graphics (Phase 4 polish).
