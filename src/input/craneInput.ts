@@ -3,6 +3,7 @@
 
 import type { Profiles } from '../config/profiles';
 import type { CraneCommands } from '../crane/crane';
+import type { SizeRequest } from '../crane/telescope';
 import { GamepadReader } from './gamepad';
 import { Keyboard } from './keyboard';
 
@@ -57,7 +58,24 @@ export class CraneInput {
       boom: boomHeld ? clampUnit(lever) : 0,
       creep: this.keyboard.isHeld(k.creep) || pad.isHeld(g.buttons.creep),
       toggleAntiSway: this.take('antiSway') % 2 === 1,
+      toggleLock: this.take('lock') > 0,
+      toggleFlippers: this.take('flippers') % 2 === 1,
+      spreaderSize: this.spreaderRequest(),
     };
+  }
+
+  /** The last spreader size asked for since the previous step: keys 1/2/3 or d-pad up/down. */
+  private spreaderRequest(): SizeRequest | null {
+    const requests: [PressAction, SizeRequest][] = [
+      ['spreader20', 20],
+      ['spreader40', 40],
+      ['spreader45', 45],
+      ['spreaderLonger', 'longer'],
+      ['spreaderShorter', 'shorter'],
+    ];
+    let request: SizeRequest | null = null;
+    for (const [action, size] of requests) if (this.take(action) > 0) request = size;
+    return request;
   }
 
   /** Presses of an action since it was last taken (keyboard and gamepad together). */

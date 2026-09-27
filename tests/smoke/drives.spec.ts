@@ -1,41 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
-import { pathToFileURL } from 'node:url';
-import { resolve } from 'node:path';
+import { advance, openApp, state } from './helpers';
 
-const appUrl = pathToFileURL(resolve('dist/quayops.html')).href;
-
-interface Drive {
-  position: number;
-  velocity: number;
-  atLimit: boolean;
-  min: number;
-  max: number;
-}
-interface State {
-  gantry: Drive;
-  trolley: Drive;
-  hoist: Drive;
-  boom: Drive & { latched: boolean; interlock: string };
-}
-type Hooks = { advance: (s: number) => void; state: () => State };
 type TestPad = { axes: number[]; buttons: { pressed: boolean; value: number }[] };
+const pad = (page: Page, change: (p: TestPad) => void) => page.evaluate(`(${change.toString()})(window.__testPad)`);
 
-const hooks = 'window.__quayops';
-const advance = (page: Page, s: number) => page.evaluate(`${hooks}.advance(${s})`);
-const state = (page: Page) => page.evaluate(() => (window as unknown as { __quayops: Hooks }).__quayops.state());
-const pad = (page: Page, change: (p: TestPad) => void) =>
-  page.evaluate(`(${change.toString()})(window.__testPad)`);
-
-// A virtual standard-mapping gamepad, so the smoke run drives the real Gamepad API path.
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
-    const buttons = Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 }));
-    const testPad = { id: 'QuayOps test pad', index: 0, connected: true, mapping: 'standard', timestamp: 0, axes: [0, 0, 0, 0], buttons };
-    Object.assign(window, { __testPad: testPad });
-    Object.defineProperty(navigator, 'getGamepads', { value: () => [testPad, null, null, null] });
-  });
-  await page.goto(appUrl);
-  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await openApp(page);
 });
 
 test('keyboard drives every axis into its limits without overrun', async ({ page }) => {

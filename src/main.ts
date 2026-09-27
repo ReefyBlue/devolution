@@ -2,8 +2,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { loadProfiles, ProfileError } from './config/profiles';
 import { FixedStepClock } from './core/fixedStep';
+import type { RampedAxis } from './core/rampedAxis';
 import { radToDeg } from './core/units';
+import { CraneAudio } from './audio/craneAudio';
 import { Crane } from './crane/crane';
+import type { CraneEvent } from './crane/events';
 import { CraneInput } from './input/craneInput';
 import { ContainerMeshes } from './render/containerMeshes';
 import { CraneRig } from './render/craneRig';
@@ -33,14 +36,22 @@ function start(el: HTMLElement): void {
   stage.scene.add(buildVessel(world), buildTractorAndChassis(world.chassis), crane.root, boxes.group);
   boxes.sync(world.containers);
 
-  const sim = new Crane(profiles, scene, world.frame);
+  const sim = new Crane(profiles, world);
   const input = new CraneInput(profiles.controls, window);
+  const audio = new CraneAudio(profiles.audio, window);
   const clock = new FixedStepClock();
+  const eventLog: CraneEvent[] = [];
   let previous = sim.view();
   let current = previous;
   const step = (): void => {
     input.gamepad.poll();
     sim.step(clock.dt, input.commands());
+    for (const e of sim.events) {
+      audio.play(e);
+      eventLog.push(e);
+    }
+    sim.events.length = 0;
+    audio.update(clock.dt, sim.gantry.travelling);
     previous = current;
     current = sim.view();
   };
@@ -74,6 +85,11 @@ function start(el: HTMLElement): void {
     for (let i = 0; i < steps; i++) step();
     const view = lerpView(previous, current, clock.alpha);
     crane.update(view);
+    boxes.sync(world.containers);
+    if (view.carried) {
+      const o = view.carried.offset;
+      boxes.placeBottom(view.carried.id, view.load.x + o.x, view.load.y + o.y, view.load.z + o.z);
+    }
     followWithShadows(env, view.gantryX, 0);
     stage.fit(camera);
     orbit.update();
@@ -82,7 +98,7 @@ function start(el: HTMLElement): void {
   stage.renderer.setAnimationLoop(frame);
 
   // Test hooks for the headless smoke run: fast-forward the simulation with the live input and trace the
-  // sway angles (degrees) per step; read the drives; set the hoist height for a sway measurement.
+  // sway angles (degrees) per step; read the crane, boxes and events; set the hoist height for a sway measurement.
   const advance = (seconds: number): { trolley: number; gantry: number }[] => {
     const trace = [];
     for (let i = 0; i < Math.round(seconds / clock.dt); i++) {
@@ -93,15 +109,17 @@ function start(el: HTMLElement): void {
   };
   const setHoist = (height: number): void => {
     sim.hoist.axis.reset(height);
+    sim.load.pose.y = height;
     sim.sway.ground();
     current = previous = sim.view();
   };
-  const drive = (a: { axis: { position: number; velocity: number; atLimit: boolean; travel: { min: number; max: number } } }) => ({
+  const drive = (a: { axis: RampedAxis }) => ({
     position: a.axis.position,
     velocity: a.axis.velocity,
     atLimit: a.axis.atLimit,
     min: a.axis.travel.min,
     max: a.axis.travel.max,
+    maxSpeed: a.axis.params.maxSpeed,
   });
   const state = () => ({
     gantry: drive(sim.gantry),
@@ -110,6 +128,17 @@ function start(el: HTMLElement): void {
     boom: { ...drive(sim.boom), latched: sim.boom.latched, interlock: sim.boom.interlock },
     ropeFall: sim.ropeFall,
     antiSway: sim.antiSway,
+    load: { ...sim.load.pose },
+    sway: { trolley: radToDeg(sim.sway.trolley.angle), gantry: radToDeg(sim.sway.gantry.angle) },
+    spreader: {
+      size: sim.spreaderSize,
+      lock: sim.spreader.twistlocks.state,
+      flippers: sim.spreader.flippers.position,
+      landed: { ...sim.landing.landed },
+      carried: sim.carried?.box.id ?? null,
+    },
+    boxes: world.containers.map((b) => ({ id: b.id, location: b.location, x: b.x, y: b.y, z: b.z, size: b.size })),
+    events: eventLog.slice(-30),
   });
   Object.assign(window, { __quayops: { setView, views: Object.keys(views), advance, state, setHoist } });
   document.body.dataset.ready = 'true';

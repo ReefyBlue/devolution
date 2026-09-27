@@ -2,7 +2,7 @@
 // upper pre-limit zone, hard upper and lower limits.
 
 import type { Profiles } from '../config/profiles';
-import { RampedAxis } from '../core/rampedAxis';
+import { type AxisCommand, RampedAxis } from '../core/rampedAxis';
 import { maxHoistSpeed, type HoistSpeedParams } from './hoistSpeed';
 
 /** Within this distance of the upper limit the spreader counts as fully up (boom interlock), m. */
@@ -14,7 +14,10 @@ export class Hoist {
   /** Mass under the spreader (a locked box), t. */
   load_t = 0;
 
-  constructor(profiles: Profiles, startHeight: number) {
+  constructor(
+    private readonly profiles: Profiles,
+    startHeight: number,
+  ) {
     const h = profiles.hoist;
     const c = profiles.crane;
     this.speed = {
@@ -35,9 +38,16 @@ export class Hoist {
     this.axis = new RampedAxis(params, { min: -c.liftBelowRail_m, max: c.liftHeight_m }, startHeight);
   }
 
-  /** demand +1 = raise. */
-  step(dt: number, demand: number, creep: boolean): void {
-    this.axis.step(dt, { demand, creep, speedCap: this.maxSpeed });
+  /**
+   * demand +1 = raise. Landed: a lowering command ramps down at slackRopeDecel_mps2 and holds (slack-rope stop);
+   * hoisting stays free. While the twistlocks turn the hoist stands.
+   */
+  step(dt: number, demand: number, creep: boolean, landed: boolean, locksTurning: boolean): void {
+    let d = locksTurning ? 0 : demand;
+    if (landed) d = Math.max(0, d);
+    const cmd: AxisCommand = { demand: d, creep, speedCap: this.maxSpeed };
+    if (landed && this.axis.velocity < 0) cmd.decel = this.profiles.hoist.slackRopeDecel_mps2;
+    this.axis.step(dt, cmd);
   }
 
   /** Speed limit for the current load, m/s. */

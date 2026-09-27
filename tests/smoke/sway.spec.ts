@@ -1,12 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
-import { pathToFileURL } from 'node:url';
-import { resolve } from 'node:path';
+import { advance, openApp, type Sample } from './helpers';
 
-const appUrl = pathToFileURL(resolve('dist/quayops.html')).href;
 const G = 9.81;
-
-type Sample = { trolley: number; gantry: number };
-const advance = (page: Page, s: number) => page.evaluate(`window.__quayops.advance(${s})`) as Promise<Sample[]>;
 const ropeFall = (page: Page) => page.evaluate('window.__quayops.state().ropeFall') as Promise<number>;
 
 /** Period from downward zero crossings of the trolley-axis sway (samples every 0.02 s). */
@@ -23,8 +18,7 @@ function period(trace: Sample[]): number {
 const amplitude = (trace: Sample[]): number => Math.max(...trace.map((s) => Math.abs(s.trolley)));
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(appUrl);
-  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await openApp(page);
 });
 
 test('sway period at hoist +30 m and +12 m matches 2π√(ℓ/g) within 2 %', async ({ page }) => {

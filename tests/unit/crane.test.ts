@@ -7,7 +7,7 @@ import { World } from '../../src/sim/world';
 
 function makeCrane(): Crane {
   const { profiles, scene } = loadProfiles();
-  return new Crane(profiles, scene, new World(scene, profiles).frame);
+  return new Crane(profiles, new World(scene, profiles));
 }
 
 interface Run {
@@ -59,8 +59,9 @@ describe('Crane drives (scripted run into every limit)', () => {
     expect(back.arrivalSpeed).toBeLessThanOrEqual(0.8 + 1e-9);
   });
 
-  it('hoist reaches +48.0 through the upper pre-limit zone and the lower limit −20.0', () => {
+  it('hoist reaches +48.0 through the upper pre-limit zone and, out over open water, the lower limit −20.0', () => {
     const crane = makeCrane();
+    hold(crane, crane.trolley.axis, { trolley: 1 }, 60);
     const a = crane.hoist.axis;
     const up = hold(crane, a, { hoist: 1 }, 30);
     expect(up.max).toBeLessThanOrEqual(48);
@@ -197,7 +198,7 @@ describe('Sway on the crane', () => {
   it('rope anti-sway halves the sway in about 5.5 s with the trolley standing', () => {
     const { profiles, scene } = loadProfiles();
     profiles.sway.antiSwayType = 'rope';
-    const crane = new Crane(profiles, scene, new World(scene, profiles).frame);
+    const crane = new Crane(profiles, new World(scene, profiles));
     crane.antiSway = true;
     crane.sway.trolley.angle = (8 * Math.PI) / 180;
     let peak = 0;
@@ -210,16 +211,14 @@ describe('Sway on the crane', () => {
     expect(deg(peak)).toBeLessThan(4.4);
   });
 
-  it('20 kn from landside holds an empty 40 ft box 0.28 m towards the water at hoist +30 m', () => {
+  it('20 kn from landside holds the bare spreader ℓ·F/(m·g) = 0.066 m towards the water at hoist +30 m', () => {
     const { profiles, scene } = loadProfiles();
     scene.wind.speed_kn = 20;
     scene.wind.fromDirection_deg = 90; // quay runs north (orientation 0), water to the west
-    const crane = new Crane(profiles, scene, new World(scene, profiles).frame);
-    crane.windAreas = { side: 12.192 * 2.591, end: 2.438 * 2.591 };
-    crane.hoist.load_t = 3.8;
-    crane.sway.trolley.angle = Math.asin(0.28 / crane.ropeFall);
+    const crane = new Crane(profiles, new World(scene, profiles));
+    crane.sway.trolley.angle = Math.asin(0.066 / crane.ropeFall);
     hold(crane, crane.trolley.axis, {}, 400);
-    expect(crane.sway.offsets(crane.ropeFall).trolley).toBeCloseTo(0.28, 2);
+    expect(crane.sway.offsets(crane.ropeFall).trolley).toBeCloseTo(0.0663, 3);
     expect(Math.abs(crane.sway.offsets(crane.ropeFall).gantry)).toBeLessThan(1e-6);
   });
 });

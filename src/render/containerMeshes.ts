@@ -35,6 +35,14 @@ export class ContainerMeshes {
     }
   }
 
+  /** Moves one box's mesh (bottom centre), e.g. a carried box with the interpolated spreader. */
+  placeBottom(id: string, x: number, y: number, z: number): void {
+    const mesh = this.meshes.get(id);
+    if (!mesh) return;
+    const height = (mesh.geometry as THREE.BoxGeometry).parameters.height;
+    mesh.position.set(x, y + height / 2, z);
+  }
+
   private create(c: Container): THREE.Mesh {
     const d = boxDims(c, this.profiles.containers);
     const key = `${c.size}${c.height}`;

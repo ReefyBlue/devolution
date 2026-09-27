@@ -19,6 +19,8 @@ export interface CraneView {
   flippersDown: number;
   cornerLanded: Record<Corner, boolean>;
   locked: boolean;
+  /** The box under the spreader and its bottom centre relative to the load point, or null. */
+  carried: { id: string; offset: { x: number; y: number; z: number } } | null;
 }
 
 /** Blends two simulated states for rendering between fixed steps; discrete fields come from the newer one. */

@@ -69,10 +69,16 @@ export class SwayModel {
 
   /** Lift-off from a landed position: the pendulum starts from the real offset between sheaves and load. */
   liftOff(offsetTrolley: number, offsetGantry: number, length: number): void {
+    this.hold('trolley', offsetTrolley, length);
+    this.hold('gantry', offsetGantry, length);
+  }
+
+  /** Holds one axis at a horizontal load offset (m), at rest: lift-off, or flippers guiding the spreader. */
+  hold(axis: 'trolley' | 'gantry', offset: number, length: number): void {
     const len = Math.max(this.limits.minLength, length);
-    this.trolley.angle = Math.asin(clampUnit(offsetTrolley / len));
-    this.gantry.angle = Math.asin(clampUnit(offsetGantry / len));
-    this.trolley.rate = this.gantry.rate = 0;
+    const max = this.limits.maxAngle;
+    this[axis].angle = Math.min(max, Math.max(-max, Math.asin(clampUnit(offset / len))));
+    this[axis].rate = 0;
   }
 
   /** Horizontal load offsets from the sheaves (m) for a given rope fall. */

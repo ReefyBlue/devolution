@@ -33,6 +33,8 @@ export interface AxisCommand {
    * so the drive feels it as an extra acceleration within its accel limit.
    */
   speedOffset?: number;
+  /** Deceleration limit for this step instead of the drive's own (slack-rope stop), m/s². */
+  decel?: number;
   /** Travel limits that apply this step if narrower than the hard stops (e.g. boom interlock). */
   travel?: AxisTravel;
 }
@@ -70,7 +72,7 @@ export class RampedAxis {
 
     // Ramp towards the target within the accel / decel limits.
     const slowingDown = Math.abs(target) < Math.abs(this.velocity) || Math.sign(target) === -Math.sign(this.velocity);
-    const limit = slowingDown ? p.decel : p.accel;
+    const limit = slowingDown ? (cmd.decel ?? p.decel) : p.accel;
     let v = this.velocity + clampAbs((target - this.velocity) / dt, limit) * dt;
 
     // The braking guard is absolute: never faster than what still stops before an end.
