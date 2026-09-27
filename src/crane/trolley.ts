@@ -16,8 +16,8 @@ export class Trolley {
   }
 
   /** demand +1 = towards the water. */
-  step(dt: number, demand: number, creep: boolean, boomDown: boolean, extraAccel = 0): void {
-    const cmd: AxisCommand = { demand, creep, extraAccel };
+  step(dt: number, demand: number, creep: boolean, boomDown: boolean, speedOffset = 0): void {
+    const cmd: AxisCommand = { demand, creep, speedOffset };
     if (!boomDown) cmd.travel = { min: -Infinity, max: this.parkLimit };
     this.axis.step(dt, cmd);
   }

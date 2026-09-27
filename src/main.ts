@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { loadProfiles, ProfileError } from './config/profiles';
 import { FixedStepClock } from './core/fixedStep';
+import { radToDeg } from './core/units';
 import { Crane } from './crane/crane';
 import { CraneInput } from './input/craneInput';
 import { ContainerMeshes } from './render/containerMeshes';
@@ -80,9 +81,20 @@ function start(el: HTMLElement): void {
   };
   stage.renderer.setAnimationLoop(frame);
 
-  // Test hooks for the headless smoke run: fast-forward the simulation with the live input, read the drives.
-  const advance = (seconds: number): void => {
-    for (let i = 0; i < Math.round(seconds / clock.dt); i++) step();
+  // Test hooks for the headless smoke run: fast-forward the simulation with the live input and trace the
+  // sway angles (degrees) per step; read the drives; set the hoist height for a sway measurement.
+  const advance = (seconds: number): { trolley: number; gantry: number }[] => {
+    const trace = [];
+    for (let i = 0; i < Math.round(seconds / clock.dt); i++) {
+      step();
+      trace.push({ trolley: radToDeg(sim.sway.trolley.angle), gantry: radToDeg(sim.sway.gantry.angle) });
+    }
+    return trace;
+  };
+  const setHoist = (height: number): void => {
+    sim.hoist.axis.reset(height);
+    sim.sway.ground();
+    current = previous = sim.view();
   };
   const drive = (a: { axis: { position: number; velocity: number; atLimit: boolean; travel: { min: number; max: number } } }) => ({
     position: a.axis.position,
@@ -96,8 +108,10 @@ function start(el: HTMLElement): void {
     trolley: drive(sim.trolley),
     hoist: drive(sim.hoist),
     boom: { ...drive(sim.boom), latched: sim.boom.latched, interlock: sim.boom.interlock },
+    ropeFall: sim.ropeFall,
+    antiSway: sim.antiSway,
   });
-  Object.assign(window, { __quayops: { setView, views: Object.keys(views), advance, state } });
+  Object.assign(window, { __quayops: { setView, views: Object.keys(views), advance, state, setHoist } });
   document.body.dataset.ready = 'true';
 }
 

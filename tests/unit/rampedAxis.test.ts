@@ -74,9 +74,13 @@ describe('RampedAxis', () => {
     expect(maxPos).toBeLessThanOrEqual(-6);
   });
 
-  it('adds anti-sway acceleration within the limit', () => {
+  it('follows an anti-sway speed offset within the accel limit and the maximum speed', () => {
     const axis = new RampedAxis(trolley, travel, 0);
-    axis.step(DT, { demand: 0, creep: false, extraAccel: 5 });
+    axis.step(DT, { demand: 0, creep: false, speedOffset: 5 });
     expect(axis.acceleration).toBeCloseTo(0.8, 6);
+    for (let i = 0; i < 400; i++) axis.step(DT, { demand: 1, creep: false, speedOffset: 2 });
+    expect(axis.velocity).toBeCloseTo(4.0, 6);
+    for (let i = 0; i < 400; i++) axis.step(DT, { demand: 0, creep: false, speedOffset: -0.5 });
+    expect(axis.velocity).toBeCloseTo(-0.5, 6);
   });
 });

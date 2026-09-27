@@ -28,8 +28,11 @@ export interface AxisCommand {
   creep: boolean;
   /** Extra speed cap, e.g. load-dependent hoist speed or an interlock (m/s). */
   speedCap?: number;
-  /** Extra acceleration from anti-sway, added within the accel limit (m/s²). */
-  extraAccel?: number;
+  /**
+   * Anti-sway correction added to the speed reference, m/s. The ramp then applies its rate of change,
+   * so the drive feels it as an extra acceleration within its accel limit.
+   */
+  speedOffset?: number;
   /** Travel limits that apply this step if narrower than the hard stops (e.g. boom interlock). */
   travel?: AxisTravel;
 }
@@ -52,7 +55,8 @@ export class RampedAxis {
     const lo = Math.max(this.travel.min, cmd.travel?.min ?? -Infinity);
     const hi = Math.min(this.travel.max, cmd.travel?.max ?? Infinity);
     const vMax = Math.min(p.maxSpeed, cmd.speedCap ?? Infinity);
-    let target = clampUnit(cmd.demand) * vMax * (cmd.creep ? p.creepFraction : 1);
+    const operator = clampUnit(cmd.demand) * vMax * (cmd.creep ? p.creepFraction : 1);
+    let target = clampAbs(operator + (cmd.speedOffset ?? 0), p.maxSpeed);
 
     // Braking guard: the highest speed that still stops before each end.
     const guardUp = brakingSpeed(hi - this.position, p.decel, dt);
@@ -67,13 +71,11 @@ export class RampedAxis {
     // Ramp towards the target within the accel / decel limits.
     const slowingDown = Math.abs(target) < Math.abs(this.velocity) || Math.sign(target) === -Math.sign(this.velocity);
     const limit = slowingDown ? p.decel : p.accel;
-    let a = clampAbs((target - this.velocity) / dt, limit);
-    if (cmd.extraAccel) a = clampAbs(a + cmd.extraAccel, Math.max(p.accel, p.decel));
-    let v = this.velocity + a * dt;
+    let v = this.velocity + clampAbs((target - this.velocity) / dt, limit) * dt;
 
     // The braking guard is absolute: never faster than what still stops before an end.
     v = Math.min(guardUp, Math.max(-guardDown, v));
-    a = (v - this.velocity) / dt;
+    const a = (v - this.velocity) / dt;
 
     let pos = this.position + v * dt;
     this.atLimit = false;

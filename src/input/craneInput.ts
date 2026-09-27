@@ -34,7 +34,7 @@ export class CraneInput {
     this.gamepad = new GamepadReader(bindings.gamepad.deadzone);
   }
 
-  /** Commands for the next fixed step. With the boom modifier held, the hoist lever drives the boom. */
+  /** Commands for the next fixed step; takes the latched presses it uses. With the boom modifier held, the hoist lever drives the boom. */
   commands(): CraneCommands {
     const k = this.bindings.keyboard;
     const g = this.bindings.gamepad;
@@ -56,6 +56,7 @@ export class CraneInput {
       hoist: boomHeld ? 0 : clampUnit(lever),
       boom: boomHeld ? clampUnit(lever) : 0,
       creep: this.keyboard.isHeld(k.creep) || pad.isHeld(g.buttons.creep),
+      toggleAntiSway: this.take('antiSway') % 2 === 1,
     };
   }
 

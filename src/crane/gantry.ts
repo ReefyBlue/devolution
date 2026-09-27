@@ -14,8 +14,8 @@ export class Gantry {
   }
 
   /** demand +1 = world +X (right when facing the water). */
-  step(dt: number, demand: number, creep: boolean, extraAccel = 0): void {
-    this.axis.step(dt, { demand, creep, extraAccel });
+  step(dt: number, demand: number, creep: boolean, speedOffset = 0): void {
+    this.axis.step(dt, { demand, creep, speedOffset });
   }
 
   get x(): number {
