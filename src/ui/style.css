@@ -1,0 +1,33 @@
+:root {
+  --bg: #0b1016;
+  --panel: rgba(12, 18, 26, 0.82);
+  --panel-edge: rgba(140, 170, 200, 0.25);
+  --text: #e6edf3;
+  --muted: #8ea1b3;
+  --ok: #3fd07a;
+  --warn: #f2b33d;
+  --alarm: #ff5a4f;
+  --accent: #57b3ff;
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#app canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
