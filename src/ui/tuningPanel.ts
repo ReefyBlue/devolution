@@ -82,5 +82,32 @@ function addExport(folder: GUI, file: string, profile: unknown): void {
     },
     'export',
   ).name(`Export ${file}`);
-  folder.add({ copy: (): void => void navigator.clipboard?.writeText(json()).catch(() => console.warn(`QuayOps: copy blocked here; use Export for ${file}`)) }, 'copy').name('Copy JSON');
+  const copy = (): void => {
+    const text = json();
+    const written = navigator.clipboard?.writeText(text);
+    if (written) written.catch(() => showJson(file, text));
+    else showJson(file, text);
+  };
+  folder.add({ copy }, 'copy').name('Copy JSON');
+}
+
+/** Where the clipboard is refused: the JSON in a box, selected, to copy by hand. */
+function showJson(file: string, text: string): void {
+  const box = document.createElement('div');
+  box.className = 'json-box';
+  const label = document.createElement('label');
+  label.htmlFor = 'json-box-text';
+  label.textContent = `${file}: the clipboard is blocked here. Press Ctrl+C (⌘C) to copy the selected text.`;
+  const area = document.createElement('textarea');
+  area.id = 'json-box-text';
+  area.readOnly = true;
+  area.value = text;
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = 'Close';
+  close.addEventListener('click', () => box.remove());
+  box.append(label, area, close);
+  document.body.append(box);
+  area.focus();
+  area.select();
 }

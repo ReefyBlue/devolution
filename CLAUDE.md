@@ -4,7 +4,9 @@ STS quay crane operator simulator that runs in the browser: TypeScript + Three.j
 
 ## Where things stand
 - **Step 1 approved 2026-09-27** (all defaults in `docs/STEP1_PROPOSAL.md` §8), then **switched to the browser build** the same day (`docs/STEP1_WEB_ADDENDUM.md`, approved). The addendum replaces the Unity-specific parts of the proposal; everything else in the proposal (conventions, crane behaviour, numbers) still applies.
+- **Phase 1 (crane core) built 2026-09-27** and handed to the owner for testing (link and offline file). **Do not start Phase 2 until the owner confirms Phase 1.** Their findings come first.
 - **Current phase:** see the status table in `README.md`.
+- **Publishing:** `npm run build` also writes `dist/quayops-page.html` (the same app without the document wrapper) for the claude.ai link; republish it to the same artifact URL after each phase.
 
 ## Documents
 - `docs/BRIEF.md`: the owner's original brief, verbatim (all four phases, realism targets, working rules). Where it differs from the proposal or the addendum, those win.

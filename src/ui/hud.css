@@ -57,6 +57,11 @@
     opacity: 0.35;
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .hud-message.alarm {
+    animation: none;
+  }
+}
 
 .hud-bar {
   position: absolute;
