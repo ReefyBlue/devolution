@@ -29,7 +29,17 @@ The repository root **is** the Unity project root (`Assets/`, `Packages/`, `Proj
 
 ## Setup
 
-Prerequisites: Unity Hub, the current **Unity 6 LTS** (6000.x), Git.
+Prerequisites (Windows 11 or a recent macOS, about 15 GB free disk):
+
+| Program | Why | Get it |
+|---|---|---|
+| Git | Checks out this branch, commits the project | git-scm.com (Windows: Git for Windows, which also gives Claude Code its Bash shell) |
+| Unity Hub + **Unity 6 LTS** (6000.x) | The Editor; free Unity Personal licence with a Unity account | unity.com/download; install the Editor from the Hub (the Visual Studio Community module is optional) |
+| uv | Runs the MCP for Unity server; fetches Python 3.10+ itself if needed | docs.astral.sh/uv |
+| Claude Code | Drives the Editor through MCP; needs a paid Claude plan (Pro, Max, Team or Enterprise) | Windows PowerShell: `irm https://claude.ai/install.ps1 \| iex`; macOS: `curl -fsSL https://claude.ai/install.sh \| bash` (the Claude desktop app works too) |
+| VS Code (optional) | Hand-writing scenarios with schema autocomplete | code.visualstudio.com |
+
+The MCP for Unity bridge is not a separate download: it is added to the Unity project in step 6.
 
 1. Unity Hub ▸ **New project** ▸ Unity 6 LTS ▸ template **Universal 3D** ▸ choose a new, empty folder ▸ **Create**. Close the Editor once it has opened.
 2. In that folder:
@@ -42,7 +52,8 @@ Prerequisites: Unity Hub, the current **Unity 6 LTS** (6000.x), Git.
 3. Reopen the project from Hub.
 4. Package Manager ▸ **+** ▸ *Install package by name…* ▸ `com.unity.nuget.newtonsoft-json`.
 5. Project Settings ▸ Player ▸ *Active Input Handling* = **Input System Package (New)**.
-6. For Claude-driven Editor work: install a Unity MCP bridge in the project (e.g. MCP for Unity) and register it with Claude Code on the same machine. Details are in `docs/STEP1_PROPOSAL.md` §0.
+6. Package Manager ▸ **+** ▸ *Install package from git URL…* ▸ `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main` (MCP for Unity). Then *Window ▸ MCP for Unity ▸ Configure All Detected Clients* registers it with Claude Code.
+7. Start Claude Code in the project folder with the Editor open and run `/mcp`: the Unity server must show as connected. Then ask it to re-run Step 0 via MCP and implement Phase 1 (see `CLAUDE.md`).
 
 ## Controls (proposed for Phase 1; the input map stays editable)
 
