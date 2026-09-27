@@ -29,7 +29,7 @@ A ship-to-shore (STS) quay crane simulator that runs in the browser (TypeScript 
 
 ## Running it
 
-- **No install:** open the QuayOps link in current Chrome or Edge, or double-click the offline file `quayops.html`. Click into the 3D view once so the keys go to the crane (sounds also start after this first click or key press).
+- **No install:** open the [QuayOps link](https://claude.ai/artifact/8g7Fshb9orvddLAnkWSzGJ) (private to the owner; share it from the page's Share menu) in current Chrome or Edge, or double-click the offline file `quayops.html`. Click into the 3D view once so the keys go to the crane (sounds also start after this first click or key press).
 - **Development** (Node.js 22.12+): `npm install`, then `npm run dev`. `npm run check` runs type check, lint and unit tests; `npm run smoke` runs the headless smoke run (first run `npx playwright install chromium`); `npm run build` writes the offline file `dist/quayops.html` and the page for the link, `dist/quayops-page.html`.
 
 ## Controls (Phase 1; bindings in `config/controls.json`)
