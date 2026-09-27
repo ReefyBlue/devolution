@@ -1,0 +1,228 @@
+{
+  "$schema": "./Schema/quayops-scenario.v1.schema.json",
+  "schemaVersion": 1,
+  "scenario": {
+    "id": "deepsea-bay22-mixed",
+    "title": "Deep-sea vessel, bay 22: discharge, hatch cover, load",
+    "description": "Post-Panamax call, last European port before the Suez leg (discharge for GBFXT, exports for SGSIN/CNNGB). Bay 22 only: deck discharge top-down on the centre panel with a twin lift, a reefer, a 45 ft HC and two restows (direct shift and via the quay buffer), centre hatch cover to the laydown, hold discharge and load, cover back, deck load. 20 kn offshore wind gusting 27 kn.",
+    "author": "QuayOps",
+    "created": "2026-09-26"
+  },
+  "quay": { "length_m": 800, "orientation_deg": 160, "watersideRailToFenderLine_m": 4.5, "apronAboveWaterline_m": 5 },
+  "vessel": {
+    "name": "MV QUAYOPS PIONEER",
+    "imo": "9999993",
+    "callSign": "V7QP9",
+    "voyage": "047E",
+    "loa_m": 334,
+    "beam_m": 45.6,
+    "draught_m": 13,
+    "deckHeightAboveWaterline_m": 11.6,
+    "mooring": { "sideAlongside": "starboard", "bowAtQuayMark_m": 600, "offFender_m": 0 },
+    "structure": {
+      "tankTopAboveKeel_m": 2,
+      "hatchCoamingHeight_m": 1.8,
+      "rowPitch_m": 2.55,
+      "firstHoldTier": 2,
+      "firstDeckTier": 82,
+      "cellGuides": { "hold": true, "deck": false }
+    },
+    "bays": {
+      "count": 20,
+      "firstBayCentreFromBow_m": 24,
+      "pitch_m": 13.4,
+      "rowsInHold": 15,
+      "rowsOnDeck": 17,
+      "tiersInHold": 9,
+      "tiersOnDeck": 8,
+      "overrides": [
+        { "bay": 2, "rowsInHold": 13, "rowsOnDeck": 15, "tiersInHold": 7, "tiersOnDeck": 6, "hold20ftAllowed": false },
+        { "bay": 78, "rowsInHold": 13, "tiersInHold": 8 }
+      ],
+      "gaps": [
+        { "afterBay": 54, "length_m": 18, "structure": "deckhouse", "heightAboveDeck_m": 32 }
+      ]
+    },
+    "hatchCovers": {
+      "panelsAcross": 3,
+      "thickness_m": 0.9,
+      "weight_t": 30,
+      "baysWithout": [],
+      "overrides": [
+        {
+          "bay": 2,
+          "panels": [
+            { "id": "02-1", "rows": ["12", "10", "08", "06", "04", "02"], "length_m": 13, "width_m": 15.3, "thickness_m": 0.9, "weight_t": 34 },
+            { "id": "02-2", "rows": ["00", "01", "03", "05", "07", "09", "11"], "length_m": 13, "width_m": 17.85, "thickness_m": 0.9, "weight_t": 38 }
+          ]
+        }
+      ]
+    },
+    "lashingBridges": { "levels": 2, "afterBays": "all" },
+    "reeferPositions": [
+      { "location": "deck", "bays": "all", "rows": "all", "tiers": [82, 84, 86] },
+      { "location": "hold", "bays": [58, 62], "rows": "all", "tiers": "all" }
+    ],
+    "decorativeFill": { "enabled": true, "density": 0.8, "seed": 7 }
+  },
+  "bayPlan": [
+    { "slot": "22-00-86", "status": "discharge", "containerId": "CMAU5693108", "size": 45, "height": "HC", "type": "HC", "grossWeight_t": 11.2, "tare_t": 4.8, "operator": "CMA", "pod": "GBFXT" },
+    { "slot": "22-00-84", "status": "discharge", "containerId": "HLXU8362013", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 18.4, "operator": "HLC", "pod": "GBFXT" },
+    { "slot": "21-00-82", "status": "discharge", "containerId": "MSKU7219043", "size": 20, "height": "standard", "type": "DV", "grossWeight_t": 24.1, "operator": "MSK", "pod": "GBFXT" },
+    { "slot": "23-00-82", "status": "discharge", "containerId": "MSKU7205585", "size": 20, "height": "standard", "type": "DV", "grossWeight_t": 22.7, "operator": "MSK", "pod": "GBFXT" },
+    { "slot": "22-02-86", "status": "restow", "containerId": "ONEU2088147", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 14.9, "operator": "ONE", "pod": "SGSIN" },
+    { "slot": "22-02-84", "status": "discharge", "containerId": "MEDU9312764", "size": 40, "height": "HC", "type": "RF", "grossWeight_t": 24.6, "operator": "MSC", "pod": "GBFXT", "reeferSetpoint_C": -18 },
+    { "slot": "22-02-82", "status": "discharge", "containerId": "MSCU6928472", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 26.2, "operator": "MSC", "pod": "GBFXT" },
+    { "slot": "22-01-84", "status": "restow", "containerId": "CSNU6340190", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 12.3, "operator": "COS", "pod": "CNNGB" },
+    { "slot": "22-01-82", "status": "discharge", "containerId": "EGHU9103722", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 19.8, "operator": "EMC", "pod": "GBFXT" },
+    { "slot": "22-04-84", "status": "discharge", "containerId": "CMAU4829308", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 3.89, "tare_t": 3.89, "operator": "CMA", "pod": "GBFXT" },
+    { "slot": "22-04-82", "status": "discharge", "containerId": "TGHU8771450", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 20.5, "operator": "MSC", "colour": "#7A7D80", "pod": "GBFXT" },
+    { "slot": "22-03-82", "status": "discharge", "containerId": "SEGU4155627", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 17.3, "operator": "HLC", "pod": "GBFXT" },
+    { "slot": "22-06-82", "status": "stay", "containerId": "CSNU7022819", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 22.4, "operator": "COS", "pod": "CNSHA" },
+    { "slot": "22-06-84", "status": "stay", "containerId": "ONEU1159375", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 15.1, "operator": "ONE", "pod": "SGSIN" },
+    { "slot": "22-08-82", "status": "stay", "containerId": "EGHU3345082", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 26.8, "operator": "EMC", "pod": "CNSHA" },
+    { "slot": "22-08-84", "status": "stay", "containerId": "CMAU7801140", "size": 40, "height": "HC", "type": "RF", "grossWeight_t": 23.9, "operator": "CMA", "pod": "SGSIN", "reeferSetpoint_C": 2 },
+    { "slot": "22-10-82", "status": "stay", "containerId": "MSCU5803260", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 20.1, "operator": "MSC", "pod": "CNNGB" },
+    { "slot": "22-12-82", "status": "stay", "containerId": "HLXU4926706", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 18.6, "operator": "HLC", "pod": "CNNGB" },
+    { "slot": "22-14-82", "status": "stay", "containerId": "MRKU2718454", "size": 40, "height": "standard", "type": "OT", "grossWeight_t": 22, "operator": "MSK", "pod": "SGSIN", "oog": { "overHeight_cm": 60 } },
+    { "slot": "22-16-82", "status": "stay", "containerId": "ONEU6634020", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 16.4, "operator": "ONE", "pod": "CNSHA" },
+    { "slot": "22-05-82", "status": "stay", "containerId": "CMAU3115081", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 23.5, "operator": "CMA", "pod": "CNSHA" },
+    { "slot": "22-05-84", "status": "stay", "containerId": "CMAU8450760", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 19, "operator": "CMA", "pod": "CNSHA" },
+    { "slot": "21-07-82", "status": "stay", "containerId": "TCNU4061273", "size": 20, "height": "standard", "type": "TK", "grossWeight_t": 22.8, "operator": "MSC", "pod": "CNNGB" },
+    { "slot": "23-07-82", "status": "stay", "containerId": "MSCU1184070", "size": 20, "height": "standard", "type": "DV", "grossWeight_t": 20.4, "operator": "MSC", "pod": "CNNGB" },
+    { "slot": "22-07-84", "status": "stay", "containerId": "MSCU9572132", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 13.2, "operator": "MSC", "pod": "SGSIN" },
+    { "slot": "22-09-82", "status": "stay", "containerId": "HLXU2057199", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 21.1, "operator": "HLC", "pod": "CNNGB" },
+    { "slot": "22-11-82", "status": "stay", "containerId": "EGHU5077332", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 17.9, "operator": "EMC", "pod": "SGSIN" },
+    { "slot": "22-13-82", "status": "stay", "containerId": "HLXU9401583", "size": 40, "height": "standard", "type": "FR", "grossWeight_t": 26.5, "operator": "HLC", "pod": "SGSIN", "oog": { "overHeight_cm": 85, "overWidthPort_cm": 0, "overWidthStarboard_cm": 0, "overLengthFore_cm": 0, "overLengthAft_cm": 0 } },
+    { "slot": "22-15-82", "status": "stay", "containerId": "CSNU4591200", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 25.3, "operator": "COS", "pod": "CNSHA" },
+    { "slot": "22-04-02", "status": "stay", "containerId": "CSNU8133740", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 27.9, "operator": "COS", "pod": "CNSHA" },
+    { "slot": "22-04-04", "status": "stay", "containerId": "CSNU2906550", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 24.2, "operator": "COS", "pod": "CNSHA" },
+    { "slot": "22-04-06", "status": "stay", "containerId": "ONEU7408120", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 21, "operator": "ONE", "pod": "CNNGB" },
+    { "slot": "22-02-02", "status": "stay", "containerId": "MSCU3460916", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 28.1, "operator": "MSC", "pod": "CNSHA" },
+    { "slot": "22-02-04", "status": "stay", "containerId": "MEDU5722082", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 25.6, "operator": "MSC", "pod": "CNSHA" },
+    { "slot": "22-02-06", "status": "stay", "containerId": "MSKU9031461", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 22.3, "operator": "MSK", "pod": "CNNGB" },
+    { "slot": "22-02-08", "status": "discharge", "containerId": "MRKU6182903", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 16.8, "operator": "MSK", "pod": "GBFXT" },
+    { "slot": "21-00-02", "status": "stay", "containerId": "TCNU5138298", "size": 20, "height": "standard", "type": "TK", "grossWeight_t": 26.4, "operator": "COS", "pod": "CNSHA" },
+    { "slot": "23-00-02", "status": "stay", "containerId": "CSNU1577300", "size": 20, "height": "standard", "type": "DV", "grossWeight_t": 27.5, "operator": "COS", "pod": "CNSHA" },
+    { "slot": "22-00-04", "status": "stay", "containerId": "CMAU6235840", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 26, "operator": "CMA", "pod": "CNSHA" },
+    { "slot": "22-00-06", "status": "stay", "containerId": "ONEU3810660", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 20.7, "operator": "ONE", "pod": "CNNGB" },
+    { "slot": "22-00-08", "status": "discharge", "containerId": "HLXU7703959", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 15.4, "operator": "HLC", "pod": "GBFXT" },
+    { "slot": "22-01-02", "status": "stay", "containerId": "EGHU2455819", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 28.3, "operator": "EMC", "pod": "CNSHA" },
+    { "slot": "22-01-04", "status": "stay", "containerId": "EGHU6700940", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 23.8, "operator": "EMC", "pod": "CNSHA" },
+    { "slot": "22-01-06", "status": "stay", "containerId": "SEGU5299172", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 21.5, "operator": "EMC", "pod": "CNNGB" },
+    { "slot": "22-01-08", "status": "discharge", "containerId": "MSCU8024730", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 18.2, "operator": "MSC", "pod": "GBFXT" },
+    { "slot": "22-03-02", "status": "stay", "containerId": "HLXU1188640", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 26.9, "operator": "HLC", "pod": "CNSHA" },
+    { "slot": "22-03-04", "status": "stay", "containerId": "HLXU3566272", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 22.1, "operator": "HLC", "pod": "CNSHA" },
+    { "slot": "22-03-06", "status": "stay", "containerId": "CMAU2077393", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 19.4, "operator": "CMA", "pod": "CNNGB" }
+  ],
+  "loadList": [
+    { "containerId": "CSNU9188028", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 17.8, "operator": "COS", "pod": "CNNGB" },
+    { "containerId": "MSKU4470190", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 18.9, "operator": "MSK", "pod": "CNNGB" },
+    { "containerId": "ONEU5266480", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 16.2, "operator": "ONE", "pod": "CNNGB" },
+    { "containerId": "MSCU2633555", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 20.3, "operator": "MSC", "pod": "CNNGB" },
+    { "containerId": "HLXU6890428", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 14.6, "operator": "HLC", "pod": "CNNGB" },
+    { "containerId": "CMAU7344105", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 3.94, "tare_t": 3.94, "operator": "CMA", "pod": "CNNGB" },
+    { "containerId": "MSKU3855200", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 21.4, "operator": "MSK", "pod": "SGSIN" },
+    { "containerId": "MRKU6944716", "size": 20, "height": "standard", "type": "DV", "grossWeight_t": 19.6, "operator": "MSK", "pod": "SGSIN" },
+    { "containerId": "MSKU1503880", "size": 20, "height": "standard", "type": "DV", "grossWeight_t": 18.3, "operator": "MSK", "pod": "SGSIN" },
+    { "containerId": "MSCU4911275", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 12.4, "operator": "MSC", "pod": "SGSIN" },
+    { "containerId": "ONEU8533065", "size": 40, "height": "HC", "type": "RF", "grossWeight_t": 25.9, "operator": "ONE", "pod": "SGSIN", "reeferSetpoint_C": 4 },
+    { "containerId": "EGHU8029317", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 15.7, "operator": "EMC", "pod": "SGSIN" },
+    { "containerId": "CMAU1570466", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 11, "operator": "CMA", "pod": "SGSIN" }
+  ],
+  "workQueue": [
+    { "id": "M001", "type": "discharge", "containerId": "CMAU5693108", "from": { "vessel": "22-00-86" }, "to": { "lane": "L1" }, "note": "45 ft high cube — telescope the spreader to 45 ft" },
+    { "id": "M002", "type": "restow", "containerId": "ONEU2088147", "from": { "vessel": "22-02-86" }, "to": { "buffer": "QB01", "tier": 1 }, "note": "Restow via quay, leg 1: SGSIN box overstowing GBFXT cargo — land it on QB01" },
+    { "id": "M003", "type": "restow", "containerId": "CSNU6340190", "from": { "vessel": "22-01-84" }, "to": { "vessel": "22-05-86" }, "note": "Restow direct shift on board: CNNGB box onto the starboard panel stack" },
+    { "id": "M004", "type": "discharge", "containerId": "HLXU8362013", "from": { "vessel": "22-00-84" }, "to": { "lane": "L2" } },
+    { "id": "M005", "type": "discharge", "containerId": "MEDU9312764", "from": { "vessel": "22-02-84" }, "to": { "lane": "L3" }, "note": "Reefer — confirm the power cable is disconnected before lifting" },
+    { "id": "M006", "type": "discharge", "containerId": "MSKU7219043", "twinLift": true, "twinContainerId": "MSKU7205585", "from": { "vessel": "22-00-82" }, "to": { "lane": "L4" }, "note": "Twin lift 21-00-82 + 23-00-82 onto one combo chassis" },
+    { "id": "M007", "type": "discharge", "containerId": "MSCU6928472", "from": { "vessel": "22-02-82" }, "to": { "lane": "L1" } },
+    { "id": "M008", "type": "discharge", "containerId": "EGHU9103722", "from": { "vessel": "22-01-82" }, "to": { "lane": "L2" } },
+    { "id": "M009", "type": "discharge", "containerId": "CMAU4829308", "from": { "vessel": "22-04-84" }, "to": { "lane": "L3" }, "note": "Empty 40 ft HC" },
+    { "id": "M010", "type": "discharge", "containerId": "TGHU8771450", "from": { "vessel": "22-04-82" }, "to": { "lane": "L4" } },
+    { "id": "M011", "type": "discharge", "containerId": "SEGU4155627", "from": { "vessel": "22-03-82" }, "to": { "lane": "L1" }, "note": "Last deck box on centre panel 22-2" },
+    { "id": "M012", "type": "hatchcover", "hatchCoverId": "22-2", "from": { "coverSeat": "22-2" }, "to": { "laydown": "HCL1" }, "note": "Centre hatch cover (30 t) off to laydown HCL1 — opens hold rows 04 02 00 01 03" },
+    { "id": "M013", "type": "discharge", "containerId": "MRKU6182903", "from": { "vessel": "22-02-08" }, "to": { "lane": "L2" }, "note": "Hold discharge: guide the box out of the cell guides slowly" },
+    { "id": "M014", "type": "discharge", "containerId": "HLXU7703959", "from": { "vessel": "22-00-08" }, "to": { "lane": "L3" } },
+    { "id": "M015", "type": "discharge", "containerId": "MSCU8024730", "from": { "vessel": "22-01-08" }, "to": { "lane": "L4" } },
+    { "id": "M016", "type": "load", "containerId": "CSNU9188028", "from": { "lane": "L5" }, "to": { "vessel": "22-04-08" }, "note": "Hold load: first export box" },
+    { "id": "M017", "type": "load", "containerId": "MSKU4470190", "from": { "lane": "L6" }, "to": { "vessel": "22-02-08" } },
+    { "id": "M018", "type": "load", "containerId": "ONEU5266480", "from": { "lane": "L3" }, "to": { "vessel": "22-00-08" } },
+    { "id": "M019", "type": "load", "containerId": "MSCU2633555", "from": { "lane": "L4" }, "to": { "vessel": "22-01-08" } },
+    { "id": "M020", "type": "load", "containerId": "HLXU6890428", "from": { "lane": "L5" }, "to": { "vessel": "22-03-08" } },
+    { "id": "M021", "type": "load", "containerId": "CMAU7344105", "from": { "lane": "L6" }, "to": { "vessel": "22-00-10" }, "note": "Empty 40 ft HC for repositioning" },
+    { "id": "M022", "type": "hatchcover", "hatchCoverId": "22-2", "from": { "laydown": "HCL1" }, "to": { "coverSeat": "22-2" }, "note": "Centre hatch cover back on its own seat — land it square on the locators" },
+    { "id": "M023", "type": "restow", "containerId": "ONEU2088147", "from": { "buffer": "QB01", "tier": 1 }, "to": { "vessel": "22-02-82" }, "note": "Restow via quay, leg 2: back on board from QB01" },
+    { "id": "M024", "type": "load", "containerId": "MSKU3855200", "from": { "lane": "L5" }, "to": { "vessel": "22-00-82" } },
+    { "id": "M025", "type": "load", "containerId": "MRKU6944716", "from": { "lane": "L6", "chassisPosition": "front" }, "to": { "vessel": "21-04-82" }, "note": "Single 20 ft on the front of the chassis" },
+    { "id": "M026", "type": "load", "containerId": "MSKU1503880", "from": { "lane": "L3" }, "to": { "vessel": "23-04-82" }, "note": "Single 20 ft, default chassis position (rear)" },
+    { "id": "M027", "type": "load", "containerId": "MSCU4911275", "from": { "lane": "L4" }, "to": { "vessel": "22-04-84" }, "note": "40 ft on top of the two 20 ft boxes" },
+    { "id": "M028", "type": "load", "containerId": "ONEU8533065", "from": { "lane": "L5" }, "to": { "vessel": "22-01-82" }, "note": "Reefer — plug in after landing" },
+    { "id": "M029", "type": "load", "containerId": "EGHU8029317", "from": { "lane": "L6" }, "to": { "vessel": "22-03-82" } },
+    { "id": "M030", "type": "load", "containerId": "CMAU1570466", "from": { "lane": "L3" }, "to": { "vessel": "22-00-84" }, "note": "Last move" }
+  ],
+  "yardSide": {
+    "transport": "terminalTractor",
+    "chassisType": "combo2040",
+    "single20Position": "rear",
+    "lanes": [
+      { "id": "L1", "fromWatersideRail_m": -4.5, "use": "discharge", "direction": "increasing" },
+      { "id": "L2", "fromWatersideRail_m": -8.5, "use": "discharge", "direction": "increasing" },
+      { "id": "L3", "fromWatersideRail_m": -12.5, "use": "both", "direction": "increasing" },
+      { "id": "L4", "fromWatersideRail_m": -16.5, "use": "both", "direction": "increasing" },
+      { "id": "L5", "fromWatersideRail_m": -20.5, "use": "load", "direction": "decreasing" },
+      { "id": "L6", "fromWatersideRail_m": -24.5, "use": "load", "direction": "decreasing" }
+    ],
+    "quayBuffer": {
+      "slots": 2,
+      "fromWatersideRail_m": -48,
+      "quayMark_m": 509,
+      "maxTiers": 1,
+      "slotSize": 40,
+      "idPrefix": "QB"
+    },
+    "hatchCoverLaydowns": [
+      { "id": "HCL1", "fromWatersideRail_m": -39, "quayMark_m": 509, "maxStack": 1 }
+    ],
+    "truckTiming": {
+      "mode": "justInTime",
+      "lookAheadMoves": 2,
+      "travelTime_s": 60,
+      "jitter_s": 15,
+      "seed": 1,
+      "stopAccuracy_m": 0.3,
+      "departDelay_s": 5
+    }
+  },
+  "environment": {
+    "wind": { "speed_kn": 20, "fromDirection_deg": 250, "gustSpeed_kn": 27, "gustInterval_s": [20, 60] },
+    "timeOfDay": "06:40",
+    "weather": "overcast",
+    "visibility_m": 8000,
+    "seaState": 3
+  },
+  "crane": {
+    "profile": "SPP-65",
+    "id": "QC04",
+    "startQuayMark_m": 509,
+    "startTrolley_m": -15,
+    "startHoistHeight_m": 30,
+    "boomRaisedAtStart": false,
+    "twinLiftEnabled": true,
+    "antiSwayOnAtStart": false,
+    "softLimits": { "minQuayMark_m": 449, "maxQuayMark_m": 569 },
+    "blockedZones": [
+      { "fromQuayMark_m": 425, "toQuayMark_m": 485, "reason": "QC05 working bay 38 — keep gantry separation" }
+    ]
+  },
+  "rules": {
+    "hardLanding_mps": 0.5,
+    "placementTolerance_cm": 5,
+    "yawTolerance_deg": 1,
+    "maxSwayAtPlacement_cm": 10,
+    "moveTimeTargets_s": { "discharge": 90, "load": 100, "restow": 120, "hatchcover": 240 },
+    "wrongSlot": "fail",
+    "windStopLimit_kn": 40
+  }
+}
