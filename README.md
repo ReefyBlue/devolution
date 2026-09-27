@@ -9,7 +9,7 @@ A ship-to-shore (STS) quay crane simulator for Unity 6 (URP, Input System, C#). 
 | Step 0: Editor/MCP check | **Not confirmed.** The first session ran in a cloud container with no Unity Editor and no Unity MCP. Re-run it on the Editor machine (see `docs/STEP1_PROPOSAL.md` §0) |
 | Step 1: proposal | **Waiting for go-ahead.** See `docs/STEP1_PROPOSAL.md` (open questions in §8) |
 | Phase 1: crane core | Not started |
-| Phase 2: scenario system | Not started. Draft format: `docs/SCENARIO_FORMAT.md` |
+| Phase 2: scenario system | Not started. Draft format: `docs/SCENARIO_FORMAT.md`; loader checks: `docs/VALIDATION_RULES.md` |
 | Phase 3: operations loop and scoring | Not started |
 | Phase 4: polish | Not started |
 
@@ -21,6 +21,7 @@ The repository root **is** the Unity project root (`Assets/`, `Packages/`, `Proj
 |---|---|
 | `docs/STEP1_PROPOSAL.md` | Step 0 report, folder structure, ScriptableObjects, Phase 1 architecture, open questions |
 | `docs/SCENARIO_FORMAT.md` | Scenario file reference for hand-authoring (draft, finalised in Phase 2) |
+| `docs/VALIDATION_RULES.md` | Loader specification for Phase 2: every scenario check (groups A–I), its severity and an example message |
 | `Assets/QuayOps/Scenarios/Schema/quayops-scenario.v1.schema.json` | JSON Schema: autocomplete and hover help in VS Code/Rider |
 | `Assets/QuayOps/Scenarios/deepsea-bay22-mixed.json` | Complete example scenario (deep-sea vessel, bay 22, mixed discharge/load with a hatch cover move, 20 kn) |
 

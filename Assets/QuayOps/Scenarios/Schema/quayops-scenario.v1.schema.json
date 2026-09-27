@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://quayops.local/schema/quayops-scenario.v1.schema.json",
   "title": "QuayOps scenario, format v1",
-  "description": "A QuayOps STS quay crane scenario: the vessel and its bay plan on arrival, the load list, the work queue of crane moves, the yard side under the crane, environment, crane start state and rules. Units are SI and carried in the field-name suffix (_m metres, _cm centimetres, _t tonnes, _s seconds, _kn knots, _deg degrees, _mps m/s, _C °C). Every object is strict: unknown keys are errors. This schema checks structure, types, enums, ranges, patterns and simple conditionals only. The ScenarioLoader performs further checks on load: ISO 6346 and IMO check digits, duplicate ids, cross-references between work queue, bay plan, load list and yard side, bay/row/tier existence for this vessel, physical stowage, hatch cover coverage, crane reach, and a sequence dry run of the work queue.",
+  "description": "A QuayOps STS quay crane scenario: the vessel and its bay plan on arrival, the load list, the work queue of crane moves, the yard side under the crane, environment, crane start state and rules. Units are SI and carried in the field-name suffix (_m metres, _cm centimetres, _t tonnes, _s seconds, _kn knots, _deg degrees, _mps m/s, _C °C). Every object is strict: unknown keys are errors. Plain JSON only: duplicate keys and comments are errors; an integer written as 20.0 is accepted. Every `default` is a fixed constant of format v1 (changed only with a new schemaVersion): write only what differs from the defaults; an explicit value pins it. Exception: omitted rules fields come from the tunable RulesDefaults asset. This schema checks structure, types, enums, ranges, patterns and simple conditionals only. The ScenarioLoader performs further checks on load: ISO 6346 and IMO check digits, duplicate ids, cross-references between work queue, bay plan, load list and yard side, bay/row/tier existence for this vessel, physical stowage, hatch cover coverage, crane reach, and a sequence dry run of the work queue.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "scenario", "vessel", "bayPlan", "workQueue", "yardSide", "crane"],
@@ -24,7 +24,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Scenario id: lower-case letters, digits and hyphens, 3–64 characters, starting with a letter or digit, e.g. \"deepsea-bay22-mixed\".",
+          "description": "Scenario id: lower-case letters, digits and hyphens, 3–64 characters, starting with a letter or digit, e.g. \"deepsea-bay22-mixed\". It is the scenario browser key and the stem of the results file name; keep it equal to the file name without \".json\" (the loader warns if it differs, the browser flags two files with the same id).",
           "pattern": "^[a-z0-9][a-z0-9-]{2,63}$",
           "examples": ["deepsea-bay22-mixed"]
         },
@@ -45,7 +45,7 @@
     },
     "quay": {
       "type": "object",
-      "description": "Berth geometry. All fields optional.",
+      "description": "Berth geometry. All fields optional; an omitted field takes its fixed format default (schema v1).",
       "additionalProperties": false,
       "properties": {
         "length_m": {
@@ -54,9 +54,15 @@
           "exclusiveMinimum": 0,
           "default": 1000
         },
+        "marksIncreaseTo": {
+          "type": "string",
+          "description": "Direction in which the quay marks increase for someone standing on the quay FACING THE WATER: \"right\" or \"left\". World X (+X = the observer's right) = quay mark (\"right\") or length_m − quay mark (\"left\"). All quay marks in the file stay real marks.",
+          "enum": ["right", "left"],
+          "default": "right"
+        },
         "orientation_deg": {
           "type": "number",
-          "description": "True bearing in degrees of the direction of increasing quay marks. Converts the true wind direction into crane-relative wind.",
+          "description": "True bearing in degrees of the direction of increasing quay marks. The world +X axis points to this bearing (marksIncreaseTo \"right\") or to this bearing + 180° (\"left\"); the water side (+Z) lies at the +X bearing − 90°. Converts the true wind direction into crane-relative wind.",
           "minimum": 0,
           "maximum": 360,
           "default": 0
@@ -69,7 +75,8 @@
         },
         "apronAboveWaterline_m": {
           "type": "number",
-          "description": "Height in metres of the quay apron / rail head (Y = 0) above the water level, i.e. the tide state. Sets the vessel's vertical position.",
+          "description": "Height in metres of the quay apron / rail head (Y = 0) above the water level, i.e. the tide state; > 0. Sets the vessel's vertical position. The loader warns outside 1.5–8 m.",
+          "exclusiveMinimum": 0,
           "default": 5
         }
       }
@@ -120,12 +127,12 @@
           "properties": {
             "sideAlongside": {
               "type": "string",
-              "description": "Side alongside the quay: \"starboard\" ⇒ bow points towards increasing quay marks; \"port\" ⇒ bow points towards decreasing quay marks.",
+              "description": "Side alongside the quay, in world terms: \"starboard\" ⇒ the bow points to world +X (to the right of someone on the quay facing the water); \"port\" ⇒ the bow points to world −X. That means \"bow towards increasing quay marks\" for starboard only when quay.marksIncreaseTo is \"right\".",
               "enum": ["port", "starboard"]
             },
             "bowAtQuayMark_m": {
               "$ref": "#/$defs/quayMark",
-              "description": "Quay mark in metres abeam the bow (forward end of LOA)."
+              "description": "Real quay mark in metres abeam the bow (forward end of LOA)."
             },
             "offFender_m": {
               "type": "number",
@@ -137,7 +144,7 @@
         },
         "structure": {
           "type": "object",
-          "description": "Hull structure details. Every field has a default.",
+          "description": "Hull structure details. Every field has a fixed format default (schema v1); write only what differs.",
           "additionalProperties": false,
           "properties": {
             "tankTopAboveKeel_m": {
@@ -160,7 +167,7 @@
             },
             "firstHoldTier": {
               "type": "integer",
-              "description": "Tier number of the lowest hold tier (even, normally 02). Hold tiers count up in steps of 2.",
+              "description": "Tier number of the lowest hold tier (even, normally 02). Hold tiers count up in steps of 2. The hold tier range must end below firstDeckTier (loader error).",
               "minimum": 2,
               "maximum": 98,
               "multipleOf": 2,
@@ -168,7 +175,7 @@
             },
             "firstDeckTier": {
               "type": "integer",
-              "description": "Tier number of the lowest deck tier on the hatch covers (even, normally 82; some vessels use 80 or 72). Deck tiers count up in steps of 2.",
+              "description": "Tier number of the lowest deck tier on the hatch covers (even, normally 82; vessels with many deck tiers use 80 or 72). Deck tiers count up in steps of 2; the highest tier of every bay must be ≤ 98 (loader error).",
               "minimum": 2,
               "maximum": 98,
               "multipleOf": 2,
@@ -176,7 +183,7 @@
             },
             "cellGuides": {
               "type": "object",
-              "description": "Where cell guides are fitted (boxes in cell guides stack without stacking cones).",
+              "description": "Where cell guides are fitted. Boxes in cell guides stack directly on each other (0 m gap); elsewhere a 0.03 m stacking-cone gap is added between boxes.",
               "additionalProperties": false,
               "properties": {
                 "hold": {
@@ -186,7 +193,7 @@
                 },
                 "deck": {
                   "type": "boolean",
-                  "description": "true = cell guides on deck (e.g. open-hatch vessel).",
+                  "description": "true = cell guides on deck (e.g. open-hatch vessel); they are 40 ft guides, so no 45 ft box stands in them.",
                   "default": false
                 }
               }
@@ -195,26 +202,33 @@
         },
         "bays": {
           "type": "object",
-          "description": "Longitudinal bay layout and default row/tier counts. 40 ft bays are numbered 02, 06, 10, … from the bow; 40 ft bay B spans the 20 ft bays B−1 (forward) and B+1 (aft).",
+          "description": "Longitudinal bay layout and default row/tier counts. Bays are numbered from the bow by walking over the odd numbers 1, 3, 5, …: an odd number listed in twentyOnlyBays is a lone 20 ft bay (length pitch_m/2) and the walk goes on at the next odd number; otherwise it and the next odd number form a 40 ft bay (e.g. 01 + 03 = 02, length pitch_m) and the walk goes on after both. Without twentyOnlyBays the 40 ft bays are 02, 06, 10, …. A 40 ft bay B spans the 20 ft bays B−1 (forward, centre −3.067 m) and B+1 (aft, +3.067 m).",
           "additionalProperties": false,
           "required": ["count", "firstBayCentreFromBow_m", "rowsInHold", "rowsOnDeck", "tiersInHold", "tiersOnDeck"],
           "properties": {
             "count": {
               "type": "integer",
-              "description": "Number of 40 ft bays N: bays 02, 06, …, 4N−2 (20 ft bays 01 … 4N−1).",
+              "description": "Number of 40 ft bays; the walk stops after this many (lone 20 ft bays are extra positions). Without twentyOnlyBays: bays 02, 06, …, 4N−2.",
               "minimum": 1,
               "maximum": 250
             },
             "firstBayCentreFromBow_m": {
               "type": "number",
-              "description": "Distance in metres from the bow (forward end of LOA) to the centre of 40 ft bay 02.",
+              "description": "Distance in metres from the bow (forward end of LOA) to the centre of the first bay position (40 ft bay 02, or the lone 20 ft bay 01).",
               "exclusiveMinimum": 0
             },
             "pitch_m": {
               "type": "number",
-              "description": "Distance in metres between consecutive 40 ft bay centres (plus the length of any gap in between).",
+              "description": "Length of one 40 ft bay position in metres (a lone 20 ft bay counts pitch_m/2). Each next bay centre = previous centre + (previous length + next length)/2 + the length of any gap after the previous bay; for 40 ft bays that is pitch_m between centres.",
               "minimum": 12.192,
               "default": 13.4
+            },
+            "twentyOnlyBays": {
+              "type": "array",
+              "description": "Odd bay numbers that are lone 20 ft bays (e.g. a short forward hold), in any order. Shifts the numbering of every bay aft of them: [1] ⇒ 01, 04 (03+05), 08 (07+09), …. A lone bay aft of the last 40 ft bay is allowed only as the next odd number of the walk. Every listed number must be reached by the walk (loader error otherwise).",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/twentyOnlyBayItem" }
             },
             "rowsInHold": {
               "type": "integer",
@@ -238,16 +252,16 @@
             },
             "overrides": {
               "type": "array",
-              "description": "Per-bay exceptions to the default row/tier counts (e.g. narrower bays forward).",
+              "description": "Per-bay exceptions to the default row/tier counts (e.g. narrower bays forward) and raised hold floors.",
               "items": {
                 "type": "object",
-                "description": "Row/tier counts for one 40 ft bay and its two 20 ft bays.",
+                "description": "Row/tier counts for one bay position: a 40 ft bay (with its two 20 ft halves) or a lone 20 ft bay.",
                 "additionalProperties": false,
                 "required": ["bay"],
                 "properties": {
                   "bay": {
-                    "$ref": "#/$defs/bay40",
-                    "description": "40 ft bay number this override applies to (also covers its two 20 ft bays)."
+                    "$ref": "#/$defs/bayNumber",
+                    "description": "Bay position this override applies to: a 40 ft bay (also covers its two 20 ft bays) or a lone 20 ft bay."
                   },
                   "rowsInHold": {
                     "type": "integer",
@@ -273,22 +287,29 @@
                     "type": "boolean",
                     "description": "false = 40 ft cells only in this hold; 20 ft boxes may not be stowed below deck in this bay.",
                     "default": true
+                  },
+                  "holdRowBaseTier": {
+                    "type": "object",
+                    "description": "Raised hold floor (tank top / hopper in the forward and aft holds): row string (\"04\") → lowest hold tier of that row (even, ≥ structure.firstHoldTier). That tier stands on the raised floor at tank top + (baseTier − firstHoldTier)/2 × 2.591 m; tiers below it do not exist in that row. Keys stay 2-digit row strings.",
+                    "propertyNames": { "pattern": "^\\d{2}$" },
+                    "additionalProperties": { "$ref": "#/$defs/tierNumber" },
+                    "examples": [{ "11": 6, "12": 6, "13": 8, "14": 8 }]
                   }
                 }
               }
             },
             "gaps": {
               "type": "array",
-              "description": "Longitudinal gaps between 40 ft bays: deckhouse (accommodation/bridge), funnel or plain gap.",
+              "description": "Longitudinal gaps between bay positions: deckhouse (accommodation/bridge), funnel or plain gap.",
               "items": {
                 "type": "object",
-                "description": "A gap aft of one 40 ft bay.",
+                "description": "A gap aft of one bay position.",
                 "additionalProperties": false,
                 "required": ["afterBay", "length_m"],
                 "properties": {
                   "afterBay": {
-                    "$ref": "#/$defs/bay40",
-                    "description": "40 ft bay number after (aft of) which the gap lies."
+                    "$ref": "#/$defs/bayNumber",
+                    "description": "Bay position (40 ft bay or lone 20 ft bay) after (aft of) which the gap lies; not the last bay."
                   },
                   "length_m": {
                     "type": "number",
@@ -314,12 +335,12 @@
         },
         "hatchCovers": {
           "type": "object",
-          "description": "Pontoon hatch covers. If omitted, every bay gets generated covers with the defaults below. Generated panel ids are \"<bay>-<n>\", n = 1..panelsAcross from port to starboard (e.g. \"22-1\", \"22-2\", \"22-3\"); length = pitch_m − 0.4, width = rows × rowPitch_m.",
+          "description": "Pontoon hatch covers. If omitted, every bay with hold rows gets generated covers with the defaults below. A bay with n hold rows gets min(panelsAcross, max(1, floor(n / 3))) generated panels (narrow bays get fewer; each still weighs weight_t, so give narrow bays realistic weights in overrides). Generated panel ids are \"<bay>-<k>\", k = 1, 2, … from port to starboard (e.g. \"22-1\", \"22-2\", \"22-3\"); length = bay length − 0.4 (pitch_m − 0.4 for a 40 ft bay, pitch_m/2 − 0.4 for a lone 20 ft bay), width = rows × rowPitch_m. The hold rows (port → starboard) are split SYMMETRICALLY over that many panels into contiguous groups: base = floor(rows / panels), remainder r. Odd panel count: the centre panel gets base + r. Even panel count: the remainder goes one row each to the two centre-most panels, pair by pair; a single row left over (odd row count, row 00) goes to the port-side centre panel. Examples (hold rows / panelsAcross): 15/3 → 5/5/5; 17/3 → 5/7/5; 16/3 → 5/6/5; 13/3 → 4/5/4; 7/3 → 4/3 (2 panels); 5/3 → 5 (1 panel); 13/2 → 7/6; 14/4 → 3/4/4/3; 15/4 → 3/5/4/3.",
           "additionalProperties": false,
           "properties": {
             "panelsAcross": {
               "type": "integer",
-              "description": "Number of panels across each bay (athwartships), numbered from port to starboard. Hold rows are split into contiguous groups as evenly as possible; any remainder goes to the centre panel(s).",
+              "description": "Number of panels across a bay (athwartships), numbered from port to starboard; a narrow bay gets min(panelsAcross, max(1, floor(hold rows / 3))). Rows are split symmetrically (see hatchCovers).",
               "minimum": 1,
               "default": 3
             },
@@ -331,28 +352,28 @@
             },
             "weight_t": {
               "type": "number",
-              "description": "Weight in tonnes of a generated panel (must not exceed the crane SWL).",
+              "description": "Weight in tonnes of a generated panel (must not exceed the crane's rated load under spreader).",
               "exclusiveMinimum": 0,
               "default": 30
             },
             "baysWithout": {
               "type": "array",
-              "description": "40 ft bay numbers without hatch covers (open-hatch bays).",
+              "description": "Bay positions without hatch covers (open-hatch bays). There the stack continues from hold to deck inside cell guides: the first deck tier over a hold row stands on the top hold tier of that row (which must be occupied), with no stacking-cone gap and no cover-underside limit. Deck rows beyond the hold width stand on pedestals as usual.",
               "uniqueItems": true,
-              "items": { "$ref": "#/$defs/bay40" }
+              "items": { "$ref": "#/$defs/bayListItem" }
             },
             "overrides": {
               "type": "array",
               "description": "Explicit panel layouts that replace the generated panels of a bay.",
               "items": {
                 "type": "object",
-                "description": "Panel layout of one 40 ft bay.",
+                "description": "Panel layout of one bay position.",
                 "additionalProperties": false,
                 "required": ["bay", "panels"],
                 "properties": {
                   "bay": {
-                    "$ref": "#/$defs/bay40",
-                    "description": "40 ft bay number whose panels are defined here."
+                    "$ref": "#/$defs/bayNumber",
+                    "description": "Bay position (40 ft bay or lone 20 ft bay) whose panels are defined here."
                   },
                   "panels": {
                     "type": "array",
@@ -370,14 +391,14 @@
                         },
                         "rows": {
                           "type": "array",
-                          "description": "Hold rows covered by this panel (2-digit row strings).",
+                          "description": "Hold rows covered by this panel (\"04\" strings canonical; integers accepted).",
                           "minItems": 1,
                           "uniqueItems": true,
-                          "items": { "$ref": "#/$defs/rowString" }
+                          "items": { "$ref": "#/$defs/rowListItem" }
                         },
                         "length_m": {
                           "type": "number",
-                          "description": "Panel length fore-and-aft in metres. Default pitch_m − 0.4.",
+                          "description": "Panel length fore-and-aft in metres. Default bay length − 0.4.",
                           "exclusiveMinimum": 0
                         },
                         "width_m": {
@@ -410,13 +431,13 @@
           "properties": {
             "levels": {
               "type": "integer",
-              "description": "Lashing bridge height in tiers (0 = no lashing bridges). 45 ft boxes on deck must stand above this height where a bridge is fore or aft of the bay.",
+              "description": "Lashing bridge height in tiers, 0–4 (0 = no lashing bridges). Bridge top = cover top + levels × 2.591 m + (levels − 1) × 0.03 m. A 45 ft box on deck in a bay with a bridge fore or aft must stand with its base at or above the bridge top.",
               "minimum": 0,
-              "maximum": 3,
+              "maximum": 4,
               "default": 2
             },
             "afterBays": {
-              "description": "\"all\" = a bridge between every pair of consecutive 40 ft bays not separated by a gap; or a list of 40 ft bay numbers with a bridge aft of them.",
+              "description": "\"all\" = a bridge aft of every bay position that is followed by another bay without a gap in between; or a list of bay positions with a bridge aft of them.",
               "default": "all",
               "anyOf": [
                 {
@@ -424,14 +445,20 @@
                   "const": "all",
                   "description": "All of them."
                 },
-                { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/bay40" } }
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": { "$ref": "#/$defs/bayListItem" }
+                }
               ]
             }
           }
         },
         "reeferPositions": {
           "type": "array",
-          "description": "Reefer plug positions. If present, every RF container must stand in a matching slot.",
+          "description": "Reefer plug positions (at least one block). If present, every RUNNING reefer (type RF with reeferSetpoint_C) must stand in a matching slot; an RF without a setpoint (empty or non-operating reefer) may stow anywhere. Lists accept integers or zero-padded strings.",
+          "minItems": 1,
           "items": {
             "type": "object",
             "description": "A block of reefer plugs.",
@@ -444,7 +471,7 @@
                 "enum": ["deck", "hold"]
               },
               "bays": {
-                "description": "\"all\" or a list of 40 ft bay numbers (each includes its two 20 ft bays).",
+                "description": "\"all\" or a list of bay positions (a 40 ft bay includes its two 20 ft bays; lone 20 ft bays by their own number).",
                 "default": "all",
                 "anyOf": [
                   {
@@ -456,12 +483,12 @@
                     "type": "array",
                     "minItems": 1,
                     "uniqueItems": true,
-                    "items": { "$ref": "#/$defs/bay40" }
+                    "items": { "$ref": "#/$defs/bayListItem" }
                   }
                 ]
               },
               "rows": {
-                "description": "\"all\" or a list of 2-digit row strings.",
+                "description": "\"all\" or a list of rows (\"04\" strings canonical; integers accepted).",
                 "default": "all",
                 "anyOf": [
                   {
@@ -473,12 +500,12 @@
                     "type": "array",
                     "minItems": 1,
                     "uniqueItems": true,
-                    "items": { "$ref": "#/$defs/rowString" }
+                    "items": { "$ref": "#/$defs/rowListItem" }
                   }
                 ]
               },
               "tiers": {
-                "description": "\"all\" or a list of tier numbers (even integers, e.g. 82, 84, 86).",
+                "description": "\"all\" or a list of tiers (even integers canonical, e.g. 82, 84, 86; \"82\" strings accepted).",
                 "default": "all",
                 "anyOf": [
                   {
@@ -490,7 +517,7 @@
                     "type": "array",
                     "minItems": 1,
                     "uniqueItems": true,
-                    "items": { "$ref": "#/$defs/tierNumber" }
+                    "items": { "$ref": "#/$defs/tierListItem" }
                   }
                 ]
               }
@@ -499,7 +526,7 @@
         },
         "decorativeFill": {
           "type": "object",
-          "description": "Generated \"stay\" (ROB) boxes in bays that no bayPlan entry or move references, for looks and collisions. Stacks are always valid.",
+          "description": "Generated \"stay\" (ROB) boxes in bays that no bayPlan entry or move references, for looks and collisions. The generator only builds valid stacks: support rules, hold height under the covers, no 45 ft box inside lashing-bridge height next to a bridge, and no 45 ft boxes in the same row and tier of adjacent bays when 13.716 m exceeds the bay pitch (their overhangs would collide).",
           "additionalProperties": false,
           "properties": {
             "enabled": {
@@ -552,12 +579,12 @@
         },
         "chassisType": {
           "type": "string",
-          "description": "Chassis behind the terminal tractor: \"combo2040\" (1 × 40/45 ft or 2 × 20 ft on twistlocks) or \"bombCart\" (cassette-style trailer with guides, no twistlocks). Required for terminalTractor, not allowed for agv.",
+          "description": "Chassis behind the terminal tractor: \"combo2040\" (1 × 40/45 ft or 2 × 20 ft on twistlocks) or \"bombCart\" (terminal (yard) chassis with corner guides and no twistlocks: 1 × 40/45 ft or 2 × 20 ft in the guides). Required for terminalTractor, not allowed for agv.",
           "enum": ["combo2040", "bombCart"]
         },
         "single20Position": {
           "type": "string",
-          "description": "Default position of a single 20 ft box on a chassis/AGV: \"front\", \"centre\" or \"rear\".",
+          "description": "Default position of a single 20 ft box on a chassis/AGV: \"front\" = the end towards the tractor unit (gooseneck end), i.e. the end facing the lane's driving direction (for an AGV: the end facing its driving direction); \"rear\" = the other end; \"centre\" = mid-length.",
           "enum": ["front", "centre", "rear"],
           "default": "rear"
         },
@@ -574,17 +601,17 @@
               "id": { "$ref": "#/$defs/id", "description": "Lane id used in move locations, e.g. \"L2\"." },
               "fromWatersideRail_m": {
                 "$ref": "#/$defs/fromWatersideRail",
-                "description": "Lane centreline in metres from the waterside rail: positive = waterside, negative = landside (between the rails 0 … −30.48, backreach beyond)."
+                "description": "Lane centreline in metres from the waterside rail: positive = waterside, negative = landside (between the rails 0 … −30.48, backreach beyond). Lanes run the full length of the crane span: the 2.44 m lane band must stay clear of each rail centreline ± 1.5 m (crane legs / gantry bogies) and must not overlap another lane, a buffer slot or a laydown."
               },
               "use": {
                 "type": "string",
-                "description": "Which moves may use the lane: \"discharge\", \"load\" or \"both\".",
+                "description": "Which legs may use the lane: \"discharge\" (vessel → lane: discharges and restow leg 1), \"load\" (lane → vessel: loads and restow leg 2) or \"both\".",
                 "enum": ["discharge", "load", "both"],
                 "default": "both"
               },
               "direction": {
                 "type": "string",
-                "description": "Driving direction along the quay: \"increasing\" or \"decreasing\" quay marks.",
+                "description": "Driving direction along the quay: \"increasing\" or \"decreasing\" quay marks. The front of a chassis/AGV faces this direction.",
                 "enum": ["increasing", "decreasing"],
                 "default": "increasing"
               }
@@ -593,7 +620,7 @@
         },
         "quayBuffer": {
           "type": "object",
-          "description": "Quay buffer stack for restows via the quay and buffered moves (absent = no buffer). Slots are laid out along the quay at 13.4 m pitch (40 ft) or 6.8 m (20 ft).",
+          "description": "Quay buffer stack for restows via the quay and discharges to the buffer (absent = no buffer). Loads never come from the buffer. Slots are laid out along the quay in the direction of increasing quay marks at 13.4 m pitch (40 ft) or 6.8 m (20 ft).",
           "additionalProperties": false,
           "required": ["slots", "fromWatersideRail_m"],
           "properties": {
@@ -604,11 +631,11 @@
             },
             "fromWatersideRail_m": {
               "$ref": "#/$defs/fromWatersideRail",
-              "description": "Buffer row centreline in metres from the waterside rail (negative = landside)."
+              "description": "Buffer row centreline in metres from the waterside rail (negative = landside). The slots (box width) must stay clear of each rail centreline ± 1.5 m and of every lane band."
             },
             "quayMark_m": {
               "$ref": "#/$defs/quayMark",
-              "description": "Quay mark in metres of the centre of slot 1. Default: crane.startQuayMark_m."
+              "description": "Quay mark in metres of the centre of slot 1. Default: the resolved crane start mark (crane.startQuayMark_m, or the quay mark of crane.startAtBay)."
             },
             "maxTiers": {
               "type": "integer",
@@ -642,11 +669,11 @@
               "id": { "$ref": "#/$defs/id", "description": "Laydown id used in move locations, e.g. \"HCL1\"." },
               "fromWatersideRail_m": {
                 "$ref": "#/$defs/fromWatersideRail",
-                "description": "Laydown centre in metres from the waterside rail (negative = landside, usually in the backreach)."
+                "description": "Laydown centre in metres from the waterside rail (negative = landside, usually in the backreach). The widest panel landed there must stay clear of each rail centreline ± 1.5 m and of every lane band, and must not overlap a buffer slot or another laydown."
               },
               "quayMark_m": {
                 "$ref": "#/$defs/quayMark",
-                "description": "Quay mark in metres of the laydown centre. Default: crane.startQuayMark_m."
+                "description": "Quay mark in metres of the laydown centre. Default: the resolved crane start mark (crane.startQuayMark_m, or the quay mark of crane.startAtBay)."
               },
               "maxStack": {
                 "type": "integer",
@@ -659,7 +686,7 @@
         },
         "truckTiming": {
           "type": "object",
-          "description": "When trucks/AGVs arrive under the crane.",
+          "description": "When trucks/AGVs arrive under the crane. Omitted fields take their fixed format defaults (schema v1).",
           "additionalProperties": false,
           "properties": {
             "mode": {
@@ -737,7 +764,7 @@
     },
     "environment": {
       "type": "object",
-      "description": "Weather and sea. All fields optional.",
+      "description": "Weather and sea. All fields optional; an omitted field takes its fixed format default (schema v1).",
       "additionalProperties": false,
       "properties": {
         "wind": {
@@ -765,21 +792,10 @@
             },
             "gustInterval_s": {
               "type": "array",
-              "description": "Random time between gusts in seconds, as [min, max].",
-              "prefixItems": [
-                {
-                  "type": "number",
-                  "description": "Minimum seconds between gusts.",
-                  "exclusiveMinimum": 0
-                },
-                {
-                  "type": "number",
-                  "description": "Maximum seconds between gusts.",
-                  "exclusiveMinimum": 0
-                }
-              ],
-              "items": false,
+              "description": "Random time between gusts in seconds, as [min, max] (the loader checks min ≤ max).",
+              "items": { "type": "number", "exclusiveMinimum": 0 },
               "minItems": 2,
+              "maxItems": 2,
               "default": [20, 60]
             }
           }
@@ -813,9 +829,9 @@
     },
     "crane": {
       "type": "object",
-      "description": "The STS crane working this scenario and its start state.",
+      "description": "The STS crane working this scenario and its start state. Give the gantry start as EXACTLY ONE of startQuayMark_m or startAtBay; the resolved start mark is also the default quayMark_m of the quay buffer and the hatch cover laydowns.",
       "additionalProperties": false,
-      "required": ["profile", "startQuayMark_m"],
+      "required": ["profile"],
       "properties": {
         "profile": {
           "type": "string",
@@ -826,11 +842,15 @@
         "id": { "$ref": "#/$defs/id", "description": "Crane number shown on the HUD, e.g. \"QC04\"." },
         "startQuayMark_m": {
           "$ref": "#/$defs/quayMark",
-          "description": "Gantry start position: quay mark in metres of the crane centreline (midway between the waterside legs)."
+          "description": "Gantry start position: real quay mark in metres of the crane centreline (midway between the waterside legs). Exactly one of startQuayMark_m / startAtBay."
+        },
+        "startAtBay": {
+          "$ref": "#/$defs/bayNumber",
+          "description": "Gantry start position: the crane starts abeam the centre of this bay (a 40 ft bay, a lone 20 ft bay, or one 20 ft half of a 40 ft bay). Exactly one of startQuayMark_m / startAtBay. The loader prints the resolved quay mark."
         },
         "startTrolley_m": {
           "type": "number",
-          "description": "Trolley start position in metres from the waterside rail (positive = waterside/outreach, negative = landside/backreach).",
+          "description": "fromWatersideRail_m of the trolley at start: + waterside, − landside. Trolley start position in metres from the waterside rail (positive = under the boom / outreach, negative = between the legs and backreach).",
           "default": -15
         },
         "startHoistHeight_m": {
@@ -850,7 +870,7 @@
         },
         "antiSwayOnAtStart": {
           "type": "boolean",
-          "description": "true = electronic anti-sway is switched on at start.",
+          "description": "true = the crane's anti-sway system (type per CraneProfile / SwayProfile) is switched on at start.",
           "default": false
         },
         "softLimits": {
@@ -886,11 +906,23 @@
             }
           }
         }
-      }
+      },
+      "oneOf": [
+        {
+          "$comment": "Start given as a quay mark.",
+          "required": ["startQuayMark_m"],
+          "properties": { "startQuayMark_m": true }
+        },
+        {
+          "$comment": "Start given as a bay.",
+          "required": ["startAtBay"],
+          "properties": { "startAtBay": true }
+        }
+      ]
     },
     "rules": {
       "type": "object",
-      "description": "Pass/fail thresholds and targets. All fields optional.",
+      "description": "Pass/fail thresholds and targets. All fields optional. Unlike the rest of the format, an omitted rules field is taken from the RulesDefaults asset (tunable in the Inspector); the defaults shown here are its factory values. Write a field to pin it for this scenario.",
       "additionalProperties": false,
       "properties": {
         "hardLanding_mps": {
@@ -956,7 +988,7 @@
         },
         "windStopLimit_kn": {
           "type": "number",
-          "description": "Wind speed in knots above which crane work must stop (warning if exceeded).",
+          "description": "Terminal wind-stop policy in knots. The effective limit is the LOWER of this and the CraneProfile inServiceWindLimit_kn (crane design limit, 40 kn for SPP-65): rules may only tighten it (the loader warns if this is above the profile value, and if the wind exceeds the effective limit).",
           "exclusiveMinimum": 0,
           "default": 40
         }
@@ -1002,7 +1034,7 @@
   "$defs": {
     "slotString": {
       "type": "string",
-      "description": "Vessel slot as bay-row-tier \"BB-RR-TT\" (bay 2–3 digits, row and tier 2 digits), e.g. \"22-04-84\". Odd bay = 20 ft bay; even bay = 40 ft bay and must be ≡ 2 (mod 4): 02, 06, 10, … (04 or 24 are invalid). Rows from the centreline outward: 00 on the centreline (odd row count only), odd rows to starboard, even rows to port. Tiers are even: 02, 04, … in the hold, 82, 84, … on deck. The loader checks bay parity, tier parity and that the bay, row and tier exist on this vessel.",
+      "description": "Vessel slot as bay-row-tier \"BB-RR-TT\" (bay 2–3 digits, row and tier 2 digits), e.g. \"22-04-84\". Odd bay = 20 ft bay; even bay = 40 ft bay made of the odd bays either side (22 = 21 + 23). Bay numbers follow the vessel layout (vessel.bays): normally 02, 06, 10, …; with lone 20 ft bays (vessel.bays.twentyOnlyBays) the numbering shifts, e.g. [1] ⇒ 01, 04 (03+05), 08 (07+09), …. Rows from the centreline outward: 00 on the centreline (odd row count only), odd rows to starboard, even rows to port. Tiers are even: 02, 04, … in the hold, 82, 84, … on deck. The loader checks that the bay, row and tier exist on this vessel and that the bay parity matches the box length.",
       "pattern": "^\\d{2,3}-\\d{2}-\\d{2}$",
       "examples": ["22-04-84", "21-00-06"]
     },
@@ -1012,6 +1044,18 @@
       "pattern": "^\\d{2}$",
       "examples": ["00", "04", "13"]
     },
+    "rowListItem": {
+      "description": "Row in a list: a 2-digit string (\"04\", canonical) or an integer (4). The loader normalises both; the same row twice is an error.",
+      "anyOf": [
+        { "$ref": "#/$defs/rowString" },
+        {
+          "type": "integer",
+          "description": "Row number as an integer (0 = centreline).",
+          "minimum": 0,
+          "maximum": 99
+        }
+      ]
+    },
     "tierNumber": {
       "type": "integer",
       "description": "Tier number (even integer): 2, 4, … in the hold, 82, 84, … on deck.",
@@ -1020,14 +1064,51 @@
       "multipleOf": 2,
       "examples": [82]
     },
-    "bay40": {
+    "tierListItem": {
+      "description": "Tier in a list: an even integer (82, canonical) or a 2-digit string (\"82\"). The loader normalises both; the same tier twice is an error.",
+      "anyOf": [
+        { "$ref": "#/$defs/tierNumber" },
+        {
+          "type": "string",
+          "description": "Tier number as a 2-digit string, even, \"02\"–\"98\".",
+          "pattern": "^(0[2468]|[1-9][02468])$"
+        }
+      ]
+    },
+    "bayNumber": {
       "type": "integer",
-      "description": "40 ft bay number: 2, 6, 10, 14, … (4N−2), i.e. even and ≡ 2 (mod 4). Its two 20 ft bays are this number −1 (forward) and +1 (aft), e.g. 22 = 21 + 23.",
-      "minimum": 2,
-      "maximum": 998,
-      "multipleOf": 2,
-      "not": { "multipleOf": 4 },
+      "description": "Bay position number: a 40 ft bay (even, e.g. 22 = 20 ft bays 21 + 23) or a lone 20 ft bay listed in vessel.bays.twentyOnlyBays (odd). The schema checks the range only; the loader checks that the bay exists on this vessel and lists the nearest valid bays if not.",
+      "minimum": 1,
+      "maximum": 999,
       "examples": [22]
+    },
+    "bayListItem": {
+      "description": "Bay position in a list: an integer (22, canonical) or a zero-padded string (\"22\" or \"022\"). The loader normalises both; the same bay twice is an error.",
+      "anyOf": [
+        { "$ref": "#/$defs/bayNumber" },
+        {
+          "type": "string",
+          "description": "Bay number as a zero-padded 2–3 digit string, not zero.",
+          "pattern": "^(0[1-9]|[1-9]\\d|0\\d[1-9]|0[1-9]\\d|[1-9]\\d{2})$"
+        }
+      ]
+    },
+    "twentyOnlyBayItem": {
+      "description": "Lone 20 ft bay number (odd): an integer (1, canonical) or a zero-padded string (\"01\" or \"001\").",
+      "anyOf": [
+        {
+          "type": "integer",
+          "description": "Odd bay number 1–999.",
+          "minimum": 1,
+          "maximum": 999,
+          "not": { "multipleOf": 2 }
+        },
+        {
+          "type": "string",
+          "description": "Odd bay number as a zero-padded 2–3 digit string.",
+          "pattern": "^\\d{1,2}[13579]$"
+        }
+      ]
     },
     "containerId": {
       "type": "string",
@@ -1043,7 +1124,7 @@
     },
     "quayMark": {
       "type": "number",
-      "description": "Quay mark in metres along the quay from mark 0 (+X = direction of increasing quay marks).",
+      "description": "Real quay mark in metres (as painted on the quay), from mark 0. Always written as the real mark, whichever way the marks run (quay.marksIncreaseTo decides where it lies in the world).",
       "minimum": 0
     },
     "fromWatersideRail": {
@@ -1063,7 +1144,7 @@
       "properties": {
         "overHeight_cm": {
           "type": "number",
-          "description": "Over-height above the top of the corner castings, in cm.",
+          "description": "Over-height above the top of the corner castings, in cm. Counts in the lift-height check (box height + overHeight_cm/100).",
           "minimum": 0
         },
         "overWidthPort_cm": {
@@ -1098,6 +1179,11 @@
           "then": { "properties": { "height": { "const": "HC" } } }
         },
         {
+          "$comment": "Type DV (standard dry van) requires height standard: a high-cube dry van is type HC.",
+          "if": { "properties": { "type": { "const": "DV" } }, "required": ["type"] },
+          "then": { "properties": { "height": { "const": "standard" } } }
+        },
+        {
           "$comment": "reeferSetpoint_C only on reefers (type RF).",
           "if": { "properties": { "type": { "const": "RF" } }, "required": ["type"] },
           "else": { "properties": { "reeferSetpoint_C": false } }
@@ -1118,7 +1204,7 @@
         "containerId": { "$ref": "#/$defs/containerId" },
         "size": {
           "type": "integer",
-          "description": "Box length in feet: 20, 40 or 45. 20 ft boxes stow in odd bays, 40/45 ft in even bays; 45 ft only on deck.",
+          "description": "Box length in feet: 20, 40 or 45. 20 ft boxes stow in odd bays, 40/45 ft in even bays; 45 ft only on deck, never in 40 ft cell guides.",
           "enum": [20, 40, 45]
         },
         "height": {
@@ -1128,7 +1214,7 @@
         },
         "type": {
           "type": "string",
-          "description": "ISO type group: \"DV\" dry van, \"HC\" high-cube dry van (requires height \"HC\"), \"RF\" reefer, \"OT\" open top, \"TK\" tank, \"FR\" flat rack.",
+          "description": "ISO type group: \"DV\" standard-height dry van (requires height \"standard\"), \"HC\" high-cube dry van (requires height \"HC\"), \"RF\" reefer, \"OT\" open top, \"TK\" tank, \"FR\" flat rack. A high-cube dry van is always written type \"HC\", height \"HC\".",
           "enum": ["DV", "HC", "RF", "OT", "TK", "FR"]
         },
         "grossWeight_t": {
@@ -1157,7 +1243,7 @@
         "pod": { "$ref": "#/$defs/unLocode", "description": "Port of discharge (POD) as UN/LOCODE, e.g. \"NLRTM\"." },
         "reeferSetpoint_C": {
           "type": "number",
-          "description": "Reefer temperature setpoint in °C. Only allowed for type \"RF\".",
+          "description": "Reefer temperature setpoint in °C. Only allowed for type \"RF\". A reefer WITH a setpoint is a running reefer and must stand in a vessel.reeferPositions slot (if reeferPositions is given); a reefer without it (empty or non-operating reefer, NOR) may stow anywhere.",
           "minimum": -70,
           "maximum": 40,
           "examples": [-18, 2]
@@ -1220,7 +1306,7 @@
         "lane": { "$ref": "#/$defs/id", "description": "Truck lane id from yardSide.lanes, e.g. \"L2\"." },
         "chassisPosition": {
           "type": "string",
-          "description": "Position of a single 20 ft box on the chassis/AGV: \"front\", \"centre\" or \"rear\". Only for single 20 ft moves; default: yardSide.single20Position.",
+          "description": "Position of a single 20 ft box on the chassis/AGV: \"front\" = the end towards the tractor unit (gooseneck end), i.e. the end facing the lane's driving direction (for an AGV: the end facing its driving direction); \"rear\" = the other end; \"centre\" = mid-length. Only for single 20 ft moves; default: yardSide.single20Position.",
           "enum": ["front", "centre", "rear"]
         }
       }
@@ -1289,7 +1375,7 @@
         },
         "type": {
           "type": "string",
-          "description": "Move type: \"discharge\" (vessel → lane | buffer), \"load\" (lane | buffer → vessel), \"restow\" (vessel → vessel shift on board, vessel → buffer = restow via quay leg 1, buffer → vessel = leg 2), \"hatchcover\" (coverSeat → laydown or laydown → coverSeat).",
+          "description": "Move type: \"discharge\" (vessel → lane | buffer), \"load\" (lane → vessel only: export boxes arrive by truck/AGV), \"restow\" (vessel → vessel = direct shift on board; via the quay: vessel → buffer then buffer → vessel, or vessel → lane then lane → vessel — between the legs the box waits on the quay buffer or on the truck/AGV; leg 2 comes back on any lane whose use is load or both), \"hatchcover\" (coverSeat → laydown or laydown → coverSeat).",
           "enum": ["discharge", "load", "restow", "hatchcover"]
         },
         "containerId": {
@@ -1298,7 +1384,7 @@
         },
         "twinLift": {
           "type": "boolean",
-          "description": "true = twin-twenty lift: two 20 ft boxes in the same row and tier of the two 20 ft bays of one 40 ft bay, lifted together on the twin-twenty spreader. Requires crane.twinLiftEnabled and twinContainerId.",
+          "description": "true = twin-twenty lift: two 20 ft boxes end to end in the same row and tier of the two 20 ft bays of one 40 ft bay, lifted together on the twin-twenty spreader. Requires crane.twinLiftEnabled and twinContainerId. Not allowed at all on hatchcover moves. Until Phase 3 the WorkQueue splits a twin lift into two single 20 ft moves (forward box first).",
           "default": false
         },
         "twinContainerId": {
@@ -1321,16 +1407,11 @@
       },
       "allOf": [
         {
-          "$comment": "hatchcover: hatchCoverId required, container fields not allowed, coverSeat <-> laydown. Other types: containerId required, hatchCoverId not allowed.",
+          "$comment": "hatchcover: hatchCoverId required, container and twin-lift fields not allowed (not even twinLift: false), coverSeat <-> laydown. Other types: containerId required, hatchCoverId not allowed.",
           "if": { "properties": { "type": { "const": "hatchcover" } }, "required": ["type"] },
           "then": {
             "required": ["hatchCoverId"],
-            "properties": {
-              "hatchCoverId": true,
-              "containerId": false,
-              "twinContainerId": false,
-              "twinLift": { "const": false }
-            },
+            "properties": { "hatchCoverId": true, "containerId": false, "twinContainerId": false, "twinLift": false },
             "anyOf": [
               {
                 "properties": {
@@ -1359,17 +1440,14 @@
           }
         },
         {
-          "$comment": "load: lane | buffer -> vessel.",
+          "$comment": "load: lane -> vessel only (export boxes arrive by truck/AGV).",
           "if": { "properties": { "type": { "const": "load" } }, "required": ["type"] },
           "then": {
-            "properties": {
-              "from": { "anyOf": [{ "$ref": "#/$defs/locationLane" }, { "$ref": "#/$defs/locationBuffer" }] },
-              "to": { "$ref": "#/$defs/locationVessel" }
-            }
+            "properties": { "from": { "$ref": "#/$defs/locationLane" }, "to": { "$ref": "#/$defs/locationVessel" } }
           }
         },
         {
-          "$comment": "restow: vessel -> vessel (shift on board), vessel -> buffer (via quay, leg 1), buffer -> vessel (leg 2).",
+          "$comment": "restow: vessel -> vessel (shift on board); via the quay buffer: vessel -> buffer, buffer -> vessel; via a truck lane: vessel -> lane, lane -> vessel.",
           "if": { "properties": { "type": { "const": "restow" } }, "required": ["type"] },
           "then": {
             "anyOf": [
@@ -1381,6 +1459,12 @@
               },
               {
                 "properties": { "from": { "$ref": "#/$defs/locationBuffer" }, "to": { "$ref": "#/$defs/locationVessel" } }
+              },
+              {
+                "properties": { "from": { "$ref": "#/$defs/locationVessel" }, "to": { "$ref": "#/$defs/locationLane" } }
+              },
+              {
+                "properties": { "from": { "$ref": "#/$defs/locationLane" }, "to": { "$ref": "#/$defs/locationVessel" } }
               }
             ]
           }

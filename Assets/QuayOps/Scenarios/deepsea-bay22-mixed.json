@@ -95,6 +95,7 @@
     { "slot": "22-11-82", "status": "stay", "containerId": "EGHU5077332", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 17.9, "operator": "EMC", "pod": "SGSIN" },
     { "slot": "22-13-82", "status": "stay", "containerId": "HLXU9401583", "size": 40, "height": "standard", "type": "FR", "grossWeight_t": 26.5, "operator": "HLC", "pod": "SGSIN", "oog": { "overHeight_cm": 85, "overWidthPort_cm": 0, "overWidthStarboard_cm": 0, "overLengthFore_cm": 0, "overLengthAft_cm": 0 } },
     { "slot": "22-15-82", "status": "stay", "containerId": "CSNU4591200", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 25.3, "operator": "COS", "pod": "CNSHA" },
+    { "slot": "22-06-02", "status": "stay", "containerId": "MNBU3184266", "size": 40, "height": "HC", "type": "RF", "grossWeight_t": 4.7, "tare_t": 4.7, "operator": "MSK", "pod": "CNSHA" },
     { "slot": "22-04-02", "status": "stay", "containerId": "CSNU8133740", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 27.9, "operator": "COS", "pod": "CNSHA" },
     { "slot": "22-04-04", "status": "stay", "containerId": "CSNU2906550", "size": 40, "height": "HC", "type": "HC", "grossWeight_t": 24.2, "operator": "COS", "pod": "CNSHA" },
     { "slot": "22-04-06", "status": "stay", "containerId": "ONEU7408120", "size": 40, "height": "standard", "type": "DV", "grossWeight_t": 21, "operator": "ONE", "pod": "CNNGB" },
@@ -171,8 +172,8 @@
       { "id": "L2", "fromWatersideRail_m": -8.5, "use": "discharge", "direction": "increasing" },
       { "id": "L3", "fromWatersideRail_m": -12.5, "use": "both", "direction": "increasing" },
       { "id": "L4", "fromWatersideRail_m": -16.5, "use": "both", "direction": "increasing" },
-      { "id": "L5", "fromWatersideRail_m": -20.5, "use": "load", "direction": "decreasing" },
-      { "id": "L6", "fromWatersideRail_m": -24.5, "use": "load", "direction": "decreasing" }
+      { "id": "L5", "fromWatersideRail_m": -20.5, "use": "load", "direction": "increasing" },
+      { "id": "L6", "fromWatersideRail_m": -24.5, "use": "load", "direction": "increasing" }
     ],
     "quayBuffer": {
       "slots": 2,
@@ -205,7 +206,7 @@
   "crane": {
     "profile": "SPP-65",
     "id": "QC04",
-    "startQuayMark_m": 509,
+    "startAtBay": 22,
     "startTrolley_m": -15,
     "startHoistHeight_m": 30,
     "boomRaisedAtStart": false,
@@ -217,12 +218,6 @@
     ]
   },
   "rules": {
-    "hardLanding_mps": 0.5,
-    "placementTolerance_cm": 5,
-    "yawTolerance_deg": 1,
-    "maxSwayAtPlacement_cm": 10,
-    "moveTimeTargets_s": { "discharge": 90, "load": 100, "restow": 120, "hatchcover": 240 },
-    "wrongSlot": "fail",
-    "windStopLimit_kn": 40
+    "moveTimeTargets_s": { "hatchcover": 300 }
   }
 }
