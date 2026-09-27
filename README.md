@@ -6,8 +6,8 @@ A ship-to-shore (STS) quay crane simulator for Unity 6 (URP, Input System, C#). 
 
 | Step / phase | State |
 |---|---|
-| Step 0: Editor/MCP check | **Not confirmed.** The first session ran in a cloud container with no Unity Editor and no Unity MCP. Re-run it on the Editor machine (see `docs/STEP1_PROPOSAL.md` §0) |
-| Step 1: proposal | **Waiting for go-ahead.** See `docs/STEP1_PROPOSAL.md` (open questions in §8) |
+| Step 0: Editor/MCP check | **Pending.** The first session ran in a cloud container with no Unity Editor and no Unity MCP. Next: re-run it via MCP on the Editor machine (see `docs/STEP1_PROPOSAL.md` §0) |
+| Step 1: proposal | **Approved 2026-09-27:** all defaults accepted, option A (local Claude Code + Unity Editor + MCP bridge). See `docs/STEP1_PROPOSAL.md` |
 | Phase 1: crane core | Not started |
 | Phase 2: scenario system | Not started. Draft format: `docs/SCENARIO_FORMAT.md`; loader checks: `docs/VALIDATION_RULES.md` |
 | Phase 3: operations loop and scoring | Not started |
@@ -19,7 +19,9 @@ The repository root **is** the Unity project root (`Assets/`, `Packages/`, `Proj
 
 | Path | Content |
 |---|---|
-| `docs/STEP1_PROPOSAL.md` | Step 0 report, folder structure, ScriptableObjects, Phase 1 architecture, open questions |
+| `CLAUDE.md` | Instructions Claude Code loads at start: status, working rules, where the documents are |
+| `docs/BRIEF.md` | The original project brief, verbatim (all four phases) |
+| `docs/STEP1_PROPOSAL.md` | Step 0 report, folder structure, ScriptableObjects, Phase 1 architecture, answered questions |
 | `docs/SCENARIO_FORMAT.md` | Scenario file reference for hand-authoring (draft, finalised in Phase 2) |
 | `docs/VALIDATION_RULES.md` | Loader specification for Phase 2: every scenario check (groups A–I), its severity and an example message |
 | `Assets/QuayOps/Scenarios/Schema/quayops-scenario.v1.schema.json` | JSON Schema: autocomplete and hover help in VS Code/Rider |

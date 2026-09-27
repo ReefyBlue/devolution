@@ -1,6 +1,6 @@
 # QuayOps: Step 0 report and Step 1 proposal
 
-Branch `claude/quayops-sts-crane-0t64lz` · status: **waiting for your go-ahead** · revised 2026-09-27
+Branch `claude/quayops-sts-crane-0t64lz` · status: **approved 2026-09-27** (all defaults accepted, option A) · revised 2026-09-27
 
 Other Step 1 files on this branch:
 
@@ -13,7 +13,7 @@ Other Step 1 files on this branch:
 | `README.md` · `CHANGELOG.md` | Setup, controls, how to test, known issues · one entry per phase |
 | `.gitignore` | Unity ignore rules |
 
-To reply, answer section 8. "Defaults OK" is a valid answer to any question.
+**Decision (2026-09-27):** defaults OK for all 35 questions in section 8; proceed with **option A** (Claude Code on the Editor machine with a Unity MCP bridge). Next: the one-time setup in §0, then the Step 0 re-run via MCP and Phase 1.
 
 ---
 
@@ -542,7 +542,7 @@ One row per group; `docs/VALIDATION_RULES.md` has every rule with its severity a
 | MCP bridge features vary | Menu execution, Console, Play Mode, Test Runner and importer settings vary by bridge; gaps become click lists for you (question 2) |
 
 ## 8. Open questions
-Each question has a **default**, so "defaults OK" is a complete answer.
+**Answered 2026-09-27: defaults OK for every question, and option A for question 1.** Each default below is therefore the decision.
 
 **(a) Blocking**
 1. How do we proceed: **A** (local Claude Code + Editor + MCP bridge) or **B** (cloud only, with click lists)? *Default: A.*
