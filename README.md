@@ -8,6 +8,7 @@ A ship-to-shore (STS) quay crane simulator for Unity 6 (URP, Input System, C#). 
 |---|---|
 | Step 0: Editor/MCP check | **Pending.** The first session ran in a cloud container with no Unity Editor and no Unity MCP. Next: re-run it via MCP on the Editor machine (see `docs/STEP1_PROPOSAL.md` §0) |
 | Step 1: proposal | **Approved 2026-09-27:** all defaults accepted, option A (local Claude Code + Unity Editor + MCP bridge). See `docs/STEP1_PROPOSAL.md` |
+| Platform change | **Proposed 2026-09-27, waiting for OK:** browser build without a game engine (TypeScript + Three.js). See `docs/STEP1_WEB_ADDENDUM.md` |
 | Phase 1: crane core | Not started |
 | Phase 2: scenario system | Not started. Draft format: `docs/SCENARIO_FORMAT.md`; loader checks: `docs/VALIDATION_RULES.md` |
 | Phase 3: operations loop and scoring | Not started |
