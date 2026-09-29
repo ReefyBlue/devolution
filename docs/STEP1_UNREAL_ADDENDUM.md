@@ -1,10 +1,10 @@
 # QuayOps: Step 1 addendum, Unreal Engine 5 build
 
-Branch `claude/quayops-sts-crane-0t64lz` · status: **draft, waiting for your decision** · 2026-09-29
+Branch `claude/quayops-sts-crane-0t64lz` · status: **draft, waiting for your decision and the Godot project** · 2026-09-29 (revised: laptop setup, §3.3)
 
 **Proposal:** move QuayOps from the browser (TypeScript + Three.js) to **Unreal Engine 5 with C++**, built and tested by Claude Code on your laptop (Intel i7, RTX 4060, 64 GB RAM, 1 TB). The browser build from Phase 1 is the starting point: its crane logic, numbers, tuning profiles and tests are ported to C++ one to one. The crane design, realism numbers, scenario format v1 and phase gates stay as approved. This addendum replaces the browser-specific parts of `STEP1_WEB_ADDENDUM.md`, as listed in section 2.
 
-**Which project is converted:** you asked for a conversion *from Godot*. The only repository this session can reach, `ReefyBlue/devolution`, holds no Godot project, and nothing in its history mentions Godot. It holds QuayOps, first planned for Unity and then built for the browser. This addendum therefore converts **QuayOps as it stands after Phase 1**. If you do have a separate Godot project, push it to GitHub (or tell me where it is) and I will add a section on what to take from it.
+**Which project is converted:** you asked for a conversion *from Godot*. The only repository this session can reach, `ReefyBlue/devolution`, holds no Godot project, and nothing in its history mentions Godot. It holds QuayOps, first planned for Unity and then built for the browser. This addendum therefore converts **QuayOps as it stands after Phase 1**. You told me on 2026-09-29 that a Godot project is on your laptop and that you will upload it. Once it is on GitHub, I will add a section on what to take from it, and the port plan and agent plan may change.
 
 ---
 
@@ -13,7 +13,7 @@ Branch `claude/quayops-sts-crane-0t64lz` · status: **draft, waiting for your de
 | Point | Browser (approved, Phase 1 built) | Unreal (this addendum) |
 |---|---|---|
 | Visual quality | Good; Phase 4 polish takes a lot of hand work | Much stronger: Lumen lighting, shadows, sky and fog, water, weather, and the free Fab/Quixel asset library for Phase 4 |
-| What you install | Nothing | Epic Games Launcher + Unreal 5, Visual Studio 2022, Git + Git LFS, Claude Code (about 100 GB on disk) |
+| What you install | Nothing | **Unreal 5 (Epic Games Launcher) and the Claude desktop app.** Claude Code on the laptop installs the rest: Visual Studio 2022 build tools, Git + Git LFS (about 100 GB on disk in total; section 3.3) |
 | Who can build and verify | Claude Code anywhere, including cloud sessions | Only Claude Code on your laptop. Cloud sessions can still work on documents and scenario files |
 | Crane physics | Custom pendulum and drives | The same custom code in C++. No Chaos physics for the crane |
 | Controls | Browser gamepad and pointer lock (can be blocked on the claude.ai link) | Native keyboard, mouse and XInput gamepad; no browser limits |
@@ -23,7 +23,7 @@ Branch `claude/quayops-sts-crane-0t64lz` · status: **draft, waiting for your de
 
 **Trade-offs to accept:**
 - **No claude.ai link and no offline HTML file.** Colleagues get a Windows zip instead.
-- **Your laptop becomes the only build machine.** It needs to be switched on, with Claude Code running, whenever work is done.
+- **Your laptop becomes the only build machine.** It needs to be switched on, with a local Claude Code session running, whenever work is done.
 - **The Phase 1 C++ port redoes work** that already runs in the browser. The benefit shows from Phase 2 on (vessel and yard visuals) and above all in Phase 4.
 - **Binary assets:** Unreal stores maps, materials and meshes as binary `.uasset` files that Claude cannot read or diff. The design below keeps them to a minimum (section 3.2).
 
@@ -86,7 +86,26 @@ The rule from `CLAUDE.md` stays: **crane logic never touches Unreal actors or me
 - **Verification without clicking:** Claude Code builds with Unreal's command-line build tool, runs the automation and smoke tests with the editor's command-line mode, takes screenshots, and reads the logs. The editor stays free for you.
 - **Editor MCP plugin: optional.** A community Unreal MCP plugin would let Claude Code look at and change the open editor directly. The code-first plan does not need it; it can be added later, for example for Phase 4 set dressing.
 
-### 3.3 Checks for every phase (replace the browser checks)
+### 3.3 Laptop setup: what you do, what Claude Code does
+
+A session running in the cloud cannot reach your laptop, so the setup is done by **a Claude Code session running on the laptop itself**. You only do the steps that need your account, your password or a click on a Windows security prompt.
+
+**You (about 30 minutes, mostly download time)**
+1. Install the **Epic Games Launcher**, sign in, and install the current **Unreal Engine 5** release (Library ▸ Engine Versions ▸ +). In its options you can untick Android, iOS and Linux support to save space.
+2. Install the **Claude desktop app** and sign in with the same account you use here. If it asks for Git for Windows, install that too (git-scm.com, default options).
+3. Create an empty folder, e.g. `C:\QuayOps`. In the desktop app, start a **local** Claude Code session in that folder (on this computer, not in the cloud) and paste: *"Set up this laptop for QuayOps on Unreal as in section 3.3 of docs/STEP1_UNREAL_ADDENDUM.md in ReefyBlue/devolution, branch claude/quayops-sts-crane-0t64lz."*
+4. Click **Yes** on the Windows security prompts (administrator rights) when the installers ask.
+
+**Claude Code on the laptop**
+1. Installs what is missing with `winget`: Git, Git LFS and the Visual Studio 2022 Build Tools with the C++ workload that Unreal's documentation lists for the installed engine version (MSVC, Windows SDK, .NET).
+2. Clones this repository and branch into that folder and switches Git LFS on.
+3. Finds the Unreal installation, and checks the RTX 4060 driver and that Unreal will use the RTX 4060 rather than the built-in Intel graphics.
+4. Runs **Step 0** (section 4): builds and starts an empty C++ project from the command line, and writes the report.
+5. Stops and reports. The port itself starts only after you have approved this addendum.
+
+To follow along from your phone or another computer, that local session can also be opened in the Claude app while it runs on the laptop (Remote Control).
+
+### 3.4 Checks for every phase (replace the browser checks)
 
 | Browser | Unreal |
 |---|---|
@@ -102,7 +121,7 @@ The rule from `CLAUDE.md` stays: **crane logic never touches Unreal actors or me
 
 This re-platforms Phase 1; it does **not** start Phase 2. Each step ends with its own check, and I stop after step 8 for your crane-feel test.
 
-0. **Step 0 on your laptop:** report the Unreal version, Visual Studio/MSVC and Windows SDK, Git LFS, Claude Code and GPU driver; build and run an empty C++ project from the command line. *Check:* a written report, as in proposal §0.
+0. **Step 0 on your laptop** (after the setup in section 3.3): report the Unreal version, Visual Studio/MSVC and Windows SDK, Git LFS, Claude Code and GPU driver; build and run an empty C++ project from the command line. *Check:* a written report, as in proposal §0.
 1. **Scaffold:** `unreal/` project, the two modules, config files, `.gitignore`/`.gitattributes`, the Python asset scripts, build/test/package scripts. *Check:* builds with 0 warnings; the empty map runs; one automation test passes from the command line.
 2. **Simulation core in C++:** core maths, JSON profiles with range checks, drives, sway, wind, anti-sway, spreader, landing, grip, test moves. *Check:* the 67 unit tests pass with the same numbers (bay 22 at quay mark 509.0; sway period 9.17 s at +30 m). In addition, **golden traces**: the browser simulation records every state value for scripted input sequences (drives into limits, a hard stop, a full pick and place), and the C++ simulation must replay them within a tight tolerance. That proves the port behaves exactly like the build you tested.
 3. **Scene:** quay, rails, water; the SPP-65 crane from its profile; feeder, hatch covers and the 84-box deck stack; lane L1 with tractor and chassis; lighting and sky. *Check:* screenshots from the same viewpoints as the browser build, side by side.
@@ -112,7 +131,7 @@ This re-platforms Phase 1; it does **not** start Phase 2. Each step ends with it
 7. **Performance:** frame-time capture of the test scene at High and Medium. *Check:* 60 fps held.
 8. **Wrap-up:** README (setup, controls, how to test, known issues), CHANGELOG entry, packaged Windows build. Then **I stop for your test**.
 
-**Definition of done:** the approved Phase 1 checklist (proposal §5.15), with the checks from section 3.3.
+**Definition of done:** the approved Phase 1 checklist (proposal §5.15), with the checks from section 3.4.
 
 **Your Phase 1 browser test still matters.** A short test of the crane feel (drives, sway, landing) on the existing link tells us what to fix, and every fix goes straight into the C++ port. Nothing is fixed twice.
 
@@ -154,5 +173,5 @@ This re-platforms Phase 1; it does **not** start Phase 2. Each step ends with it
 
 ## What happens after your OK
 1. In this cloud session: I update `CLAUDE.md` (Unreal commands, checks and working rules) and the README, and write the golden-trace recorder for the browser simulation. It runs in Node, so it can be done here.
-2. On your laptop: install the programs (Unreal, Visual Studio 2022 with the C++ game development workload, Git + Git LFS, Claude Code), clone this branch, open a terminal in the repository and run `claude`. Tell it: *"Run Step 0 from docs/STEP1_UNREAL_ADDENDUM.md, then continue with the port plan."*
+2. On your laptop: you install Unreal and the Claude desktop app; a local Claude Code session does the rest of the setup and Step 0 (section 3.3).
 3. I port Phase 1 following section 4, stop after step 8, and hand you the build for your test.
